@@ -65,10 +65,10 @@ export default async function AdminDashboardPage() {
     .slice(0, 5);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Resumen general</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-2xl font-bold tracking-tight">Resumen general</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           Estado actual de la plataforma en tiempo real.
         </p>
       </div>
@@ -88,10 +88,10 @@ export default async function AdminDashboardPage() {
 
       {/* Stats principales */}
       <section>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           Plataforma
         </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             icon={Users}
             label="Usuarios totales"
@@ -121,10 +121,10 @@ export default async function AdminDashboardPage() {
 
       {/* Estado de partidos */}
       <section>
-        <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           Partidos
         </h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard
             icon={Calendar}
             label="Total cargados"
@@ -156,8 +156,8 @@ export default async function AdminDashboardPage() {
 
       {/* Próximos partidos */}
       {upcoming.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+        <section className="flex flex-col gap-2.5">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Próximos a jugarse
           </h2>
           <Card>
@@ -213,24 +213,24 @@ function StatCard({
 
   return (
     <Card elevation="raised">
-      <CardContent className="pt-6 flex items-center gap-4">
+      <CardContent className="pt-4 pb-4 flex items-center gap-3">
         <div
           className={cn(
-            "size-12 rounded-xl flex items-center justify-center",
+            "size-10 rounded-lg flex items-center justify-center shrink-0",
             accents[accent],
           )}
         >
-          <Icon className="size-6" />
+          <Icon className="size-5" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
+        <div className="flex flex-col min-w-0">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">
             {label}
           </span>
-          <span className="text-2xl font-bold tabular-nums">
-            {value.toLocaleString("es")}
+          <span className="text-xl font-bold tabular-nums leading-tight">
+            {value.toLocaleString("es-PE")}
           </span>
           {sublabel && (
-            <span className="text-xs text-muted-foreground">{sublabel}</span>
+            <span className="text-[10px] text-muted-foreground">{sublabel}</span>
           )}
         </div>
       </CardContent>
