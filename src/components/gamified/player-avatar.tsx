@@ -4,16 +4,13 @@
  * Variantes:
  *  - "google" (default): foto de Google + iniciales como fallback
  *  - "flag:X":           bandera emoji en círculo de color
- *  - "cup":              imagen del trofeo del Mundial (cup-coin.png)
+ *  - "custom":           foto subida por el usuario (data URL en customAvatarDataUrl)
  *
- * Se usa en todas las superficies donde antes íbamos directo a `<Avatar>`.
- * Si quieres mostrar SIEMPRE la foto de Google sin importar el preset,
- * usá `<Avatar>` directo.
+ * Si el preset es "custom" pero no hay customAvatarDataUrl, cae a "google".
  */
 
 "use client";
 
-import Image from "next/image";
 import {
   Avatar,
   AvatarFallback,
@@ -26,6 +23,7 @@ import type { AvatarPreset } from "@/types";
 interface PlayerAvatarProps {
   name: string;
   avatarUrl?: string;
+  customAvatarDataUrl?: string;
   preset?: AvatarPreset;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
@@ -50,11 +48,22 @@ const FLAG_FONT_SIZE = {
 export function PlayerAvatar({
   name,
   avatarUrl,
+  customAvatarDataUrl,
   preset = "google",
   size = "md",
   className,
 }: PlayerAvatarProps) {
   const sizeClass = SIZE_MAP[size];
+
+  // Variante: foto custom subida por el usuario
+  if (preset === "custom" && customAvatarDataUrl) {
+    return (
+      <Avatar className={cn(sizeClass, className)}>
+        <AvatarImage src={customAvatarDataUrl} alt={name} />
+        <AvatarFallback>{getInitials(name)}</AvatarFallback>
+      </Avatar>
+    );
+  }
 
   // Variante: bandera
   if (preset.startsWith("flag:")) {
@@ -71,29 +80,6 @@ export function PlayerAvatar({
         title={`Bandera de ${country}`}
       >
         <span className="leading-none">{flag}</span>
-      </div>
-    );
-  }
-
-  // Variante: cup-coin
-  if (preset === "cup") {
-    return (
-      <div
-        className={cn(
-          "rounded-full flex items-center justify-center bg-gradient-to-br from-amber-100 to-yellow-200 dark:from-amber-950/40 dark:to-yellow-900/30 border border-amber-300 dark:border-amber-700 select-none overflow-hidden p-1",
-          sizeClass,
-          className,
-        )}
-        title="Copa del Mundial"
-      >
-        <Image
-          src="/icons/cup-coin.png"
-          alt="Copa del Mundial"
-          width={96}
-          height={96}
-          className="w-full h-full object-contain"
-          unoptimized
-        />
       </div>
     );
   }

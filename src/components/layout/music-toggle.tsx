@@ -20,7 +20,7 @@ import { Music, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "tecscore-music-muted";
-const TRACK_PATH = "/audio/lobby.mp3";
+const TRACK_PATH = "/audio/daidai_shakira.mp3";
 const VOLUME = 0.25;
 const FADE_MS = 500;
 

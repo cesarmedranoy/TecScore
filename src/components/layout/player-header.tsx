@@ -1,8 +1,5 @@
 /**
  * PlayerHeader — barra superior pegada arriba del contenido.
- *
- * Muestra el PlayerPill (avatar + nombre + puntos + racha) a la izquierda
- * y a la derecha: música, toggle tema, y un slot opcional de acciones.
  */
 
 import type { ReactNode } from "react";
@@ -15,6 +12,7 @@ interface PlayerHeaderProps {
   name: string;
   tag: string;
   avatarUrl?: string;
+  customAvatarDataUrl?: string;
   avatarPreset?: AvatarPreset;
   points: number;
   streak: number;
@@ -25,6 +23,7 @@ export function PlayerHeader({
   name,
   tag,
   avatarUrl,
+  customAvatarDataUrl,
   avatarPreset,
   points,
   streak,
@@ -36,6 +35,7 @@ export function PlayerHeader({
         name={name}
         tag={tag}
         avatarUrl={avatarUrl}
+        customAvatarDataUrl={customAvatarDataUrl}
         avatarPreset={avatarPreset}
         points={points}
         streak={streak}

@@ -35,6 +35,7 @@ export default async function PerfilPage() {
 
   const preset: AvatarPreset =
     (user.avatarPreset as AvatarPreset | undefined) ?? "google";
+  const customAvatarDataUrl = user.customAvatarDataUrl;
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,6 +52,7 @@ export default async function PerfilPage() {
           <PlayerAvatar
             name={user.displayName}
             avatarUrl={user.avatarUrl}
+            customAvatarDataUrl={customAvatarDataUrl}
             preset={preset}
             size="xl"
           />
@@ -113,6 +115,7 @@ export default async function PerfilPage() {
           <AvatarPicker
             userName={user.displayName}
             googleAvatarUrl={user.avatarUrl}
+            customAvatarDataUrl={customAvatarDataUrl}
             current={preset}
           />
         </CardContent>

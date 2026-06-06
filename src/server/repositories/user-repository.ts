@@ -64,12 +64,17 @@ export const userRepository = {
     );
   },
 
-  /** Actualiza preset de avatar + (opcionalmente) displayName. */
+  /** Actualiza campos editables del perfil. */
   async updateProfile(
     userId: string,
-    fields: { displayName?: string; avatarPreset?: string },
+    fields: {
+      displayName?: string;
+      avatarPreset?: string;
+      customAvatarDataUrl?: string | null; // null = limpiar
+    },
   ): Promise<void> {
     const sets: string[] = ["updatedAt = :t"];
+    const removes: string[] = [];
     const values: Record<string, unknown> = { ":t": now() };
     if (fields.displayName !== undefined) {
       sets.push("displayName = :n");
@@ -79,12 +84,22 @@ export const userRepository = {
       sets.push("avatarPreset = :a");
       values[":a"] = fields.avatarPreset;
     }
-    if (sets.length === 1) return; // nada que actualizar
+    if (fields.customAvatarDataUrl !== undefined) {
+      if (fields.customAvatarDataUrl === null) {
+        removes.push("customAvatarDataUrl");
+      } else {
+        sets.push("customAvatarDataUrl = :c");
+        values[":c"] = fields.customAvatarDataUrl;
+      }
+    }
+    if (sets.length === 1 && removes.length === 0) return; // nada que actualizar
+    const parts = [`SET ${sets.join(", ")}`];
+    if (removes.length > 0) parts.push(`REMOVE ${removes.join(", ")}`);
     await ddb.send(
       new UpdateCommand({
         TableName: TABLES.USERS,
         Key: { userId },
-        UpdateExpression: `SET ${sets.join(", ")}`,
+        UpdateExpression: parts.join(" "),
         ExpressionAttributeValues: values,
       }),
     );

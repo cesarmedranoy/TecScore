@@ -53,7 +53,7 @@ export function PointsBadge({
         />
       ) : (
         <Image
-          src="/icons/cup-coin.png"
+          src="/icons/cup_coin.png"
           alt="Copa del Mundial"
           width={icon}
           height={icon}

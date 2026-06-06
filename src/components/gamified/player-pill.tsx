@@ -1,10 +1,7 @@
 /**
  * PlayerPill — bloque compacto con avatar + nombre#tag + puntos.
  *
- * Va en la esquina superior izquierda del dashboard, como pediste:
- *   "Cada jugador obvio ganara sus puntos, esos puntos ubicadas en la
- *    esquina izquierda arriba del dashboard junto con el (avatar)
- *    NombreEjemplo#tag12f 100 (icono de puntos) pts"
+ * Va en la esquina superior izquierda del dashboard.
  */
 
 import { PlayerAvatar } from "./player-avatar";
@@ -17,6 +14,7 @@ interface PlayerPillProps {
   name: string;
   tag: string;
   avatarUrl?: string;
+  customAvatarDataUrl?: string;
   avatarPreset?: AvatarPreset;
   points: number;
   streak: number;
@@ -28,6 +26,7 @@ export function PlayerPill({
   name,
   tag,
   avatarUrl,
+  customAvatarDataUrl,
   avatarPreset = "google",
   points,
   streak,
@@ -39,6 +38,7 @@ export function PlayerPill({
       <PlayerAvatar
         name={name}
         avatarUrl={avatarUrl}
+        customAvatarDataUrl={customAvatarDataUrl}
         preset={avatarPreset}
         size={compact ? "sm" : "md"}
       />

@@ -1,13 +1,13 @@
 /**
- * AvatarPicker — grid de opciones de avatar.
+ * AvatarPicker — UI completa de selección de avatar.
  *
- * El usuario elige entre:
- *  - "google": su foto Google
- *  - "cup":    el escudo del Mundial
- *  - "flag:X": banderas de selecciones (12+ países)
+ * Tres secciones:
+ *  1. Tu foto (Google) → preset "google"
+ *  2. Subir foto custom (con crop circular tipo TikTok)
+ *  3. Banderas de selecciones del Mundial
  *
- * Al hacer click sobre uno: server action guarda + se ve el cambio
- * instantáneo (revalidatePath actualiza dashboard también).
+ * Al seleccionar uno: server action persiste + revalidatePath para que
+ * el cambio se vea instantáneo en el header.
  */
 
 "use client";
@@ -18,6 +18,7 @@ import { PlayerAvatar } from "@/components/gamified/player-avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { updateAvatarPresetAction } from "../actions";
+import { AvatarUploadDialog } from "./avatar-upload-dialog";
 import type { AvatarPreset } from "@/types";
 
 const FLAG_OPTIONS: string[] = [
@@ -42,12 +43,14 @@ const FLAG_OPTIONS: string[] = [
 interface AvatarPickerProps {
   userName: string;
   googleAvatarUrl?: string;
+  customAvatarDataUrl?: string;
   current: AvatarPreset;
 }
 
 export function AvatarPicker({
   userName,
   googleAvatarUrl,
+  customAvatarDataUrl,
   current,
 }: AvatarPickerProps) {
   const [selected, setSelected] = useState<AvatarPreset>(current);
@@ -62,7 +65,7 @@ export function AvatarPicker({
       const res = await updateAvatarPresetAction(preset);
       if (res.error) {
         setError(res.error);
-        setSelected(current); // revertir
+        setSelected(current);
       }
     });
   }
@@ -75,12 +78,15 @@ export function AvatarPicker({
         </p>
       )}
 
-      {/* Foto Google + Copa */}
-      <Section title="Identidad">
+      {/* Foto personal */}
+      <Section
+        title="Tu identidad"
+        action={<AvatarUploadDialog hasCurrent={!!customAvatarDataUrl} />}
+      >
         <Option
           isSelected={selected === "google"}
           onClick={() => pick("google")}
-          label="Tu foto"
+          label="Foto Google"
         >
           <PlayerAvatar
             name={userName}
@@ -89,13 +95,20 @@ export function AvatarPicker({
             size="lg"
           />
         </Option>
-        <Option
-          isSelected={selected === "cup"}
-          onClick={() => pick("cup")}
-          label="Copa Mundial"
-        >
-          <PlayerAvatar name={userName} preset="cup" size="lg" />
-        </Option>
+        {customAvatarDataUrl && (
+          <Option
+            isSelected={selected === "custom"}
+            onClick={() => pick("custom")}
+            label="Mi foto"
+          >
+            <PlayerAvatar
+              name={userName}
+              customAvatarDataUrl={customAvatarDataUrl}
+              preset="custom"
+              size="lg"
+            />
+          </Option>
+        )}
       </Section>
 
       {/* Banderas */}
@@ -124,17 +137,22 @@ export function AvatarPicker({
 
 function Section({
   title,
+  action,
   children,
 }: {
   title: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
     <Card>
       <CardContent className="pt-5 pb-5 flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          {title}
-        </h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            {title}
+          </h3>
+          {action}
+        </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
           {children}
         </div>
