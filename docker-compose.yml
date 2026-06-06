@@ -1,0 +1,45 @@
+# DynamoDB Local — réplica funcional de AWS DynamoDB para desarrollo offline.
+#
+# Por qué: permite que cualquier dev (incluyendo el compañero de Julio) trabaje
+# sin necesitar credenciales reales de AWS. Misma API, mismos comandos.
+#
+# Uso:
+#   npm run db:up        # levanta DynamoDB Local en localhost:8000
+#   npm run db:setup     # crea las tablas
+#   npm run db:down      # apaga el contenedor
+#
+# Datos persistentes en ./docker/dynamodb-data (ignorado por git).
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: tecscore-dynamodb
+    ports:
+      - "8000:8000"
+    # -sharedDb: todas las apps comparten el mismo archivo de DB (más simple)
+    # -dbPath: persistir en disco para que los datos sobrevivan a docker compose down
+    command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
+    volumes:
+      - ./docker/dynamodb-data:/data
+    working_dir: /home/dynamodblocal
+    user: root
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # UI web para inspeccionar las tablas en localhost:8001
+  # (útil para debug — equivalente a la consola de AWS pero local)
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: tecscore-dynamodb-admin
+    ports:
+      - "8001:8001"
+    environment:
+      DYNAMO_ENDPOINT: http://dynamodb-local:8000
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: local
+      AWS_SECRET_ACCESS_KEY: local
+    depends_on:
+      - dynamodb-local
