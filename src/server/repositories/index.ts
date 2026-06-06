@@ -17,3 +17,16 @@ export {
   pointsRepository,
   PointsAlreadyAwardedError,
 } from "./points-repository";
+export {
+  groupRepository,
+  JoinCodeAlreadyExistsError,
+} from "./group-repository";
+export {
+  groupMemberRepository,
+  AlreadyMemberError,
+} from "./group-member-repository";
+export {
+  groupRequestRepository,
+  isRequestExpired,
+  REQUEST_TTL_HOURS,
+} from "./group-request-repository";
