@@ -2,7 +2,10 @@
  * /mis-grupos/[groupId] — detalle del grupo con ranking.
  *
  * Acceso restringido: solo miembros del grupo (o admin del sistema).
- * Si no sos miembro → 403 visual con CTA para volver.
+ * Si no eres miembro → 403 visual con CTA para volver.
+ *
+ * El ranking usa PlayerAvatar (no Avatar plano) para respetar el preset
+ * elegido por cada usuario (foto Google, foto custom o bandera).
  */
 
 import { redirect, notFound } from "next/navigation";
@@ -25,12 +28,13 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlayerAvatar } from "@/components/gamified/player-avatar";
 import { PointsBadge } from "@/components/gamified/points-badge";
 import { StreakBadge } from "@/components/gamified/streak-badge";
 import { GroupActions } from "./_components/group-actions";
 import { PendingRequests } from "./_components/pending-requests";
-import { cn, getInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import type { AvatarPreset, User } from "@/types";
 
 interface PageProps {
   params: Promise<{ groupId: string }>;
@@ -84,6 +88,8 @@ export default async function GroupDetailPage({ params }: PageProps) {
           displayName: u.displayName,
           tag: u.tag,
           avatarUrl: u.avatarUrl,
+          avatarPreset: (u.avatarPreset as AvatarPreset | undefined) ?? "google",
+          customAvatarDataUrl: u.customAvatarDataUrl,
         },
       };
     }),
@@ -111,7 +117,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
               {isOwner && (
                 <Badge variant="accent">
                   <Crown className="size-3" />
-                  Sos owner
+                  Eres owner
                 </Badge>
               )}
             </div>
@@ -194,6 +200,8 @@ export default async function GroupDetailPage({ params }: PageProps) {
               {ranking.slice(3).map((user, idx) => {
                 const position = idx + 4;
                 const isMe = user.userId === session.user.userId;
+                const preset =
+                  (user.avatarPreset as AvatarPreset | undefined) ?? "google";
                 return (
                   <div
                     key={user.userId}
@@ -205,12 +213,13 @@ export default async function GroupDetailPage({ params }: PageProps) {
                     <span className="text-sm font-bold text-muted-foreground tabular-nums w-6">
                       #{position}
                     </span>
-                    <Avatar className="size-9">
-                      {user.avatarUrl && (
-                        <AvatarImage src={user.avatarUrl} alt={user.displayName} />
-                      )}
-                      <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
-                    </Avatar>
+                    <PlayerAvatar
+                      name={user.displayName}
+                      avatarUrl={user.avatarUrl}
+                      customAvatarDataUrl={user.customAvatarDataUrl}
+                      preset={preset}
+                      size="sm"
+                    />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-baseline gap-0">
                         <span className="font-medium truncate">
@@ -238,12 +247,24 @@ export default async function GroupDetailPage({ params }: PageProps) {
 // Subcomponentes
 // ============================================================================
 
+type PodiumUser = Pick<
+  User,
+  | "userId"
+  | "displayName"
+  | "tag"
+  | "avatarUrl"
+  | "avatarPreset"
+  | "customAvatarDataUrl"
+  | "totalPoints"
+  | "currentStreak"
+>;
+
 function PodiumCard({
   user,
   position,
   isMe,
 }: {
-  user: { userId: string; displayName: string; tag: string; avatarUrl: string; totalPoints: number; currentStreak: number };
+  user: PodiumUser;
   position: 1 | 2 | 3;
   isMe: boolean;
 }) {
@@ -258,21 +279,25 @@ function PodiumCard({
     2: "ring-zinc-300",
     3: "ring-orange-400",
   } as const;
+  const preset = (user.avatarPreset as AvatarPreset | undefined) ?? "google";
 
   return (
     <div className="flex flex-col items-center gap-2 mt-auto">
-      <Avatar
+      <div
         className={cn(
-          "size-16 ring-4",
+          "rounded-full ring-4 p-0.5",
           ring[position],
           isMe && "ring-offset-2 ring-offset-background",
         )}
       >
-        {user.avatarUrl && (
-          <AvatarImage src={user.avatarUrl} alt={user.displayName} />
-        )}
-        <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
-      </Avatar>
+        <PlayerAvatar
+          name={user.displayName}
+          avatarUrl={user.avatarUrl}
+          customAvatarDataUrl={user.customAvatarDataUrl}
+          preset={preset}
+          size="lg"
+        />
+      </div>
       <div className="text-center min-w-0 max-w-full">
         <p className="font-semibold truncate text-sm">
           {user.displayName}
@@ -308,7 +333,7 @@ function ForbiddenView() {
         <div>
           <h3 className="text-lg font-semibold">Este grupo es privado</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Pedile al owner que te invite o que apruebe tu solicitud.
+            Pídele al owner que te invite o que apruebe tu solicitud.
           </p>
         </div>
         <Button asChild variant="outline">

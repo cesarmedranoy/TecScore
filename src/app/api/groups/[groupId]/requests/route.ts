@@ -49,6 +49,8 @@ export async function GET(
         displayName: user.displayName,
         tag: user.tag,
         avatarUrl: user.avatarUrl,
+        avatarPreset: user.avatarPreset ?? "google",
+        customAvatarDataUrl: user.customAvatarDataUrl,
       },
     });
   }

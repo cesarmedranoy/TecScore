@@ -1,6 +1,6 @@
 /**
- * /admin/usuarios — vista de usuarios.
- * Read-only por ahora.
+ * /admin/usuarios — vista admin de usuarios.
+ * Read-only por ahora. Usa PlayerAvatar para respetar el preset de cada uno.
  */
 
 import { ddb } from "@/lib/aws/client";
@@ -8,9 +8,8 @@ import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { TABLES } from "@/lib/aws/tables";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
-import type { User } from "@/types";
+import { PlayerAvatar } from "@/components/gamified/player-avatar";
+import type { AvatarPreset, User } from "@/types";
 
 export default async function AdminUsuariosPage() {
   const res = await ddb.send(new ScanCommand({ TableName: TABLES.USERS }));
@@ -40,48 +39,53 @@ export default async function AdminUsuariosPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((u, idx) => (
-                <tr
-                  key={u.userId}
-                  className="border-b border-border last:border-0 hover:bg-muted/50"
-                >
-                  <td className="px-3 py-3 font-mono text-xs tabular-nums">
-                    {idx + 1}
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-7">
-                        {u.avatarUrl && (
-                          <AvatarImage src={u.avatarUrl} alt={u.displayName} />
-                        )}
-                        <AvatarFallback>
-                          {getInitials(u.displayName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">
-                        {u.displayName}
-                        <span className="text-muted-foreground">#{u.tag}</span>
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-3 py-3 text-xs text-muted-foreground">
-                    {u.email}
-                  </td>
-                  <td className="px-3 py-3">
-                    {u.role === "ADMIN" ? (
-                      <Badge variant="danger">ADMIN</Badge>
-                    ) : (
-                      <Badge variant="muted">PLAYER</Badge>
-                    )}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums font-semibold">
-                    {u.totalPoints.toLocaleString("es")}
-                  </td>
-                  <td className="px-3 py-3 text-right tabular-nums">
-                    {u.currentStreak} / {u.maxStreak}
-                  </td>
-                </tr>
-              ))}
+              {users.map((u, idx) => {
+                const preset =
+                  (u.avatarPreset as AvatarPreset | undefined) ?? "google";
+                return (
+                  <tr
+                    key={u.userId}
+                    className="border-b border-border last:border-0 hover:bg-muted/50"
+                  >
+                    <td className="px-3 py-3 font-mono text-xs tabular-nums">
+                      {idx + 1}
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex items-center gap-2">
+                        <PlayerAvatar
+                          name={u.displayName}
+                          avatarUrl={u.avatarUrl}
+                          customAvatarDataUrl={u.customAvatarDataUrl}
+                          preset={preset}
+                          size="xs"
+                        />
+                        <span className="font-medium">
+                          {u.displayName}
+                          <span className="text-muted-foreground">
+                            #{u.tag}
+                          </span>
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-muted-foreground">
+                      {u.email}
+                    </td>
+                    <td className="px-3 py-3">
+                      {u.role === "ADMIN" ? (
+                        <Badge variant="danger">ADMIN</Badge>
+                      ) : (
+                        <Badge variant="muted">PLAYER</Badge>
+                      )}
+                    </td>
+                    <td className="px-3 py-3 text-right tabular-nums font-semibold">
+                      {u.totalPoints.toLocaleString("es-PE")}
+                    </td>
+                    <td className="px-3 py-3 text-right tabular-nums">
+                      {u.currentStreak} / {u.maxStreak}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </CardContent>

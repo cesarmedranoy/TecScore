@@ -1,9 +1,7 @@
 /**
  * PendingRequests — lista de solicitudes pendientes (solo owner las ve).
  *
- * Cada solicitud tiene 2 botones: Aprobar / Rechazar.
- * Calls a la API directamente con fetch — sin server actions porque
- * son muchas filas y no queremos un revalidate por cada click.
+ * Usa PlayerAvatar para respetar el preset elegido por el solicitante.
  */
 
 "use client";
@@ -13,8 +11,8 @@ import { useRouter } from "next/navigation";
 import { Check, X, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/utils";
+import { PlayerAvatar } from "@/components/gamified/player-avatar";
+import type { AvatarPreset } from "@/types";
 
 interface RequestItem {
   groupId: string;
@@ -26,6 +24,8 @@ interface RequestItem {
     displayName: string;
     tag: string;
     avatarUrl: string;
+    avatarPreset?: AvatarPreset;
+    customAvatarDataUrl?: string;
   };
 }
 
@@ -96,17 +96,13 @@ export function PendingRequests({ groupId, requests }: PendingRequestsProps) {
                 key={r.userId}
                 className="flex items-center gap-3 px-3 py-2 rounded-md border border-border"
               >
-                <Avatar className="size-9">
-                  {r.requester.avatarUrl && (
-                    <AvatarImage
-                      src={r.requester.avatarUrl}
-                      alt={r.requester.displayName}
-                    />
-                  )}
-                  <AvatarFallback>
-                    {getInitials(r.requester.displayName)}
-                  </AvatarFallback>
-                </Avatar>
+                <PlayerAvatar
+                  name={r.requester.displayName}
+                  avatarUrl={r.requester.avatarUrl}
+                  customAvatarDataUrl={r.requester.customAvatarDataUrl}
+                  preset={r.requester.avatarPreset ?? "google"}
+                  size="sm"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate">
                     {r.requester.displayName}
