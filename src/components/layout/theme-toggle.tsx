@@ -1,11 +1,9 @@
 /**
  * ThemeToggle — botón sol/luna para alternar modo claro/oscuro.
  *
- * Persiste la elección en localStorage y respeta `prefers-color-scheme`
- * del sistema si el usuario no eligió nunca.
- *
- * El "flash" inicial lo previene un script inline en RootLayout, por
- * eso aquí solo leemos el estado actual y reaccionamos al click.
+ * Persiste la elección en cookie (no localStorage) para que el servidor
+ * la lea en el siguiente render y no haya flash. El toggle aplica el
+ * cambio al instante sin recargar.
  */
 
 "use client";
@@ -16,9 +14,17 @@ import { Button } from "@/components/ui/button";
 
 type Theme = "light" | "dark";
 
+const COOKIE_KEY = "tecscore-theme";
+const ONE_YEAR = 60 * 60 * 24 * 365;
+
 function readCurrentTheme(): Theme {
   if (typeof document === "undefined") return "light";
   return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
+function writeCookie(value: Theme): void {
+  if (typeof document === "undefined") return;
+  document.cookie = `${COOKIE_KEY}=${value}; path=/; max-age=${ONE_YEAR}; samesite=lax`;
 }
 
 export function ThemeToggle({
@@ -40,12 +46,9 @@ export function ThemeToggle({
     const next: Theme = theme === "dark" ? "light" : "dark";
     setTheme(next);
     document.documentElement.classList.toggle("dark", next === "dark");
-    try {
-      localStorage.setItem("tecscore-theme", next);
-    } catch {}
+    writeCookie(next);
   }
 
-  // Pre-mount: render placeholder para evitar mismatch de hidratación
   if (!mounted) {
     return (
       <Button variant={variant} size="icon" className={className} aria-hidden>

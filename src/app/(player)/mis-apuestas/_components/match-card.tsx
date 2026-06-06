@@ -121,8 +121,12 @@ export function MatchCard({ match, prediction, pointsEarned }: MatchCardProps) {
               </div>
             </div>
 
-            {/* Kickoff */}
-            <div className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+            {/* Kickoff — suppressHydrationWarning porque Intl formatea
+                ligeramente distinto en Node (server) vs browser (client). */}
+            <div
+              className="text-xs text-muted-foreground flex items-center justify-center gap-1.5"
+              suppressHydrationWarning
+            >
               <Calendar className="size-3" />
               {formatKickoff(kickoffDate)}
             </div>

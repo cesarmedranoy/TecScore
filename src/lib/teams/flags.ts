@@ -125,18 +125,40 @@ const FLAGS: Record<string, string> = {
 /** Bandera por defecto cuando no hay match. */
 const DEFAULT_FLAG = "🏳️";
 
+/** Quita acentos y diacríticos: "Sudáfrica" → "sudafrica". */
+function stripAccents(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase();
+}
+
 /**
  * Resuelve la bandera para un nombre de equipo.
- * Tolera variantes de capitalización y espacios extras.
+ * Tolera variantes de capitalización, espacios extras y acentos.
+ *
+ * Ejemplos que matchean correctamente:
+ *  - "Argentina", "argentina", "ARGENTINA"
+ *  - "Perú", "Peru", "perú"
+ *  - "Sudáfrica", "Sudafrica", "sudafrica"
  */
 export function getFlag(teamName: string): string {
   const trimmed = teamName.trim();
+
+  // 1. Match exacto (rápido)
   if (FLAGS[trimmed]) return FLAGS[trimmed];
 
-  // Intento case-insensitive
+  // 2. Match case-insensitive
   const lower = trimmed.toLowerCase();
   for (const key of Object.keys(FLAGS)) {
     if (key.toLowerCase() === lower) return FLAGS[key]!;
   }
+
+  // 3. Match sin acentos (tolera typos como "Sudafrica" sin tilde)
+  const normalized = stripAccents(trimmed);
+  for (const key of Object.keys(FLAGS)) {
+    if (stripAccents(key) === normalized) return FLAGS[key]!;
+  }
+
   return DEFAULT_FLAG;
 }

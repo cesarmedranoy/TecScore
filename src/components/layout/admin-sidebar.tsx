@@ -60,7 +60,7 @@ export function AdminSidebar({ signOutSlot }: AdminSidebarProps) {
         </Link>
       </div>
 
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+      <nav className="px-3 py-3 flex flex-col gap-0.5 overflow-y-auto">
         {NAV.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -71,7 +71,7 @@ export function AdminSidebar({ signOutSlot }: AdminSidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 isActive
                   ? "bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -82,9 +82,8 @@ export function AdminSidebar({ signOutSlot }: AdminSidebarProps) {
             </Link>
           );
         })}
+        <div className="mt-2 pt-2 border-t border-border">{signOutSlot}</div>
       </nav>
-
-      <div className="px-3 py-4 border-t border-border">{signOutSlot}</div>
     </aside>
   );
 }

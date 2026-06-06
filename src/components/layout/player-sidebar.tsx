@@ -63,8 +63,8 @@ export function PlayerSidebar({ signOutSlot }: PlayerSidebarProps) {
         </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+      {/* Nav + sign-out agrupados arriba — sin gap muerto */}
+      <nav className="px-3 py-3 flex flex-col gap-0.5 overflow-y-auto">
         {NAV.map((item) => {
           const isActive =
             pathname === item.href ||
@@ -75,7 +75,7 @@ export function PlayerSidebar({ signOutSlot }: PlayerSidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 isActive
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -86,10 +86,8 @@ export function PlayerSidebar({ signOutSlot }: PlayerSidebarProps) {
             </Link>
           );
         })}
+        <div className="mt-2 pt-2 border-t border-border">{signOutSlot}</div>
       </nav>
-
-      {/* Sign out al final */}
-      <div className="px-3 py-4 border-t border-border">{signOutSlot}</div>
     </aside>
   );
 }

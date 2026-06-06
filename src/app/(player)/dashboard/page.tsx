@@ -100,7 +100,7 @@ export default async function DashboardPage() {
             <p className="text-emerald-100">
               {predictionCount === 0
                 ? "Aún no tienes predicciones. Comienza con los próximos partidos."
-                : `Llevas ${predictionCount} predicciones y ${points} puntos. ¡Sigue así!`}
+                : `Llevas ${predictionCount} ${predictionCount === 1 ? "predicción" : "predicciones"} y ${points} ${points === 1 ? "punto" : "puntos"}. ¡Sigue así!`}
             </p>
           </div>
           {groupCount === 0 && (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -19,35 +20,28 @@ export const metadata: Metadata = {
 };
 
 /**
- * Script inline anti-flash: lee la preferencia de tema del localStorage
- * y aplica la clase `dark` ANTES de que React hidrate. Evita el flash
- * blanco que se vería si el usuario tiene tema oscuro guardado.
+ * El tema se lee de cookie en cada render (server-side).
+ * Esto elimina el "flash" sin necesidad de scripts inline:
+ *  - El HTML inicial ya viene con la clase correcta.
+ *  - El toggle actualiza la cookie + clase del DOM.
+ *  - Sin warning de React por scripts en el árbol de componentes.
  */
-const themeScript = `
-(function() {
-  try {
-    var t = localStorage.getItem("tecscore-theme");
-    if (t === "dark" || (!t && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-    }
-  } catch (e) {}
-})();
-`;
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const theme = cookieStore.get("tecscore-theme")?.value;
+  const isDark = theme === "dark";
+
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased${
+        isDark ? " dark" : ""
+      }`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
