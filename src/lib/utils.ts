@@ -31,10 +31,14 @@ export function now(): string {
 /**
  * cn (className): merge condicional de clases Tailwind.
  *
- * Lo necesita shadcn/ui. Implementación mínima sin dependencias extras.
- * Si más adelante usamos `clsx` + `tailwind-merge` para manejar conflictos
- * (ej. dos `p-4` en la misma cadena), lo reemplazamos aquí sin tocar el resto.
+ * clsx: maneja condicionales (objetos, arrays, strings).
+ * tailwind-merge: resuelve conflictos (ej. "p-4 p-2" → "p-2").
+ *
+ * Patrón estándar de shadcn/ui. Lo usan TODOS los componentes UI.
  */
-export function cn(...classes: Array<string | undefined | null | false>): string {
-  return classes.filter(Boolean).join(" ");
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs));
 }

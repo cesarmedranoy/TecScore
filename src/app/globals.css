@@ -1,26 +1,113 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   TecScore Design Tokens — Mundial gamificado
+   --------------------------------------------------------------------------
+   Paleta:
+   - Primary: emerald (cancha de fútbol)
+   - Accent:  amber/gold (trofeo, campeón)
+   - Streak:  orange (llama, racha activa)
+   - Neutrals: zinc para superficies y texto
+   ========================================================================== */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Superficies */
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #15803d;
+
+  /* Acentos de marca */
+  --primary: #15803d;          /* emerald-700 — cancha */
+  --primary-foreground: #ffffff;
+  --accent: #eab308;            /* yellow-500 — trofeo */
+  --accent-foreground: #422006;
+  --streak: #ea580c;            /* orange-600 — racha */
+  --streak-foreground: #ffffff;
+  --danger: #dc2626;
+  --danger-foreground: #ffffff;
+  --success: #16a34a;
+  --success-foreground: #ffffff;
+
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #22c55e;
+
+  --primary: #22c55e;          /* green-500 — más vivo en dark */
+  --primary-foreground: #052e16;
+  --accent: #fbbf24;            /* amber-400 */
+  --accent-foreground: #422006;
+  --streak: #f97316;            /* orange-500 */
+  --streak-foreground: #ffffff;
+  --danger: #ef4444;
+  --danger-foreground: #ffffff;
+  --success: #22c55e;
+  --success-foreground: #052e16;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-streak: var(--streak);
+  --color-streak-foreground: var(--streak-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-sm: calc(var(--radius) - 8px);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar custom para que se sienta gamificado */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
 }
