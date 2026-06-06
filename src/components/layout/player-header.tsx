@@ -9,11 +9,13 @@ import type { ReactNode } from "react";
 import { PlayerPill } from "@/components/gamified/player-pill";
 import { ThemeToggle } from "./theme-toggle";
 import { MusicToggle } from "./music-toggle";
+import type { AvatarPreset } from "@/types";
 
 interface PlayerHeaderProps {
   name: string;
   tag: string;
   avatarUrl?: string;
+  avatarPreset?: AvatarPreset;
   points: number;
   streak: number;
   actions?: ReactNode;
@@ -23,6 +25,7 @@ export function PlayerHeader({
   name,
   tag,
   avatarUrl,
+  avatarPreset,
   points,
   streak,
   actions,
@@ -33,6 +36,7 @@ export function PlayerHeader({
         name={name}
         tag={tag}
         avatarUrl={avatarUrl}
+        avatarPreset={avatarPreset}
         points={points}
         streak={streak}
       />

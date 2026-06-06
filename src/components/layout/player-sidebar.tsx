@@ -22,6 +22,7 @@ import {
   UserPlus,
   Search,
   HelpCircle,
+  UserCircle,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ const NAV: NavItem[] = [
   { href: "/mis-apuestas", label: "Mis apuestas", icon: TrendingUp },
   { href: "/mis-grupos", label: "Mis grupos", icon: Users },
   { href: "/eliminatorias", label: "Eliminatorias", icon: Trophy },
+  { href: "/perfil", label: "Mi perfil", icon: UserCircle },
   { href: "/amigos", label: "Amigos", icon: UserPlus },
   { href: "/buscar", label: "Buscar jugadores", icon: Search },
   { href: "/ayuda", label: "Ayuda", icon: HelpCircle },

@@ -12,13 +12,22 @@
 
 export type Role = "PLAYER" | "ADMIN";
 
+/**
+ * Avatar preset elegido por el usuario.
+ *  - "google"      → usar foto de la cuenta Google (default)
+ *  - "flag:Perú"   → bandera del país como avatar
+ *  - "cup"         → escudo / trofeo del Mundial
+ */
+export type AvatarPreset = "google" | "cup" | `flag:${string}`;
+
 export interface User {
   userId: string;            // ULID
   email: string;             // único, viene de Google
   googleId: string;          // sub de Google
   displayName: string;       // "Julio"
   tag: string;               // "12f" → display final: "Julio#12f"
-  avatarUrl: string;
+  avatarUrl: string;         // foto Google (siempre presente)
+  avatarPreset?: AvatarPreset; // elección del usuario; undefined = "google"
   role: Role;
   totalPoints: number;
   currentStreak: number;     // racha actual de aciertos consecutivos

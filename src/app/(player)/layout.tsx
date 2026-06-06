@@ -34,6 +34,7 @@ export default async function PlayerLayout({
   const name = user?.displayName ?? session.user.name ?? "Jugador";
   const tag = user?.tag ?? session.user.tag;
   const avatarUrl = user?.avatarUrl ?? session.user.image ?? undefined;
+  const avatarPreset = user?.avatarPreset ?? "google";
   const points = user?.totalPoints ?? 0;
   const streak = user?.currentStreak ?? 0;
 
@@ -45,6 +46,7 @@ export default async function PlayerLayout({
           name={name}
           tag={tag}
           avatarUrl={avatarUrl}
+          avatarPreset={avatarPreset}
           points={points}
           streak={streak}
         />

@@ -63,4 +63,30 @@ export const userRepository = {
       }),
     );
   },
+
+  /** Actualiza preset de avatar + (opcionalmente) displayName. */
+  async updateProfile(
+    userId: string,
+    fields: { displayName?: string; avatarPreset?: string },
+  ): Promise<void> {
+    const sets: string[] = ["updatedAt = :t"];
+    const values: Record<string, unknown> = { ":t": now() };
+    if (fields.displayName !== undefined) {
+      sets.push("displayName = :n");
+      values[":n"] = fields.displayName;
+    }
+    if (fields.avatarPreset !== undefined) {
+      sets.push("avatarPreset = :a");
+      values[":a"] = fields.avatarPreset;
+    }
+    if (sets.length === 1) return; // nada que actualizar
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLES.USERS,
+        Key: { userId },
+        UpdateExpression: `SET ${sets.join(", ")}`,
+        ExpressionAttributeValues: values,
+      }),
+    );
+  },
 };

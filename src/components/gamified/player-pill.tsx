@@ -7,15 +7,17 @@
  *    NombreEjemplo#tag12f 100 (icono de puntos) pts"
  */
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PlayerAvatar } from "./player-avatar";
 import { PointsBadge } from "./points-badge";
 import { StreakBadge } from "./streak-badge";
-import { cn, getInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import type { AvatarPreset } from "@/types";
 
 interface PlayerPillProps {
   name: string;
   tag: string;
   avatarUrl?: string;
+  avatarPreset?: AvatarPreset;
   points: number;
   streak: number;
   compact?: boolean;
@@ -26,6 +28,7 @@ export function PlayerPill({
   name,
   tag,
   avatarUrl,
+  avatarPreset = "google",
   points,
   streak,
   compact = false,
@@ -33,10 +36,12 @@ export function PlayerPill({
 }: PlayerPillProps) {
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      <Avatar className={compact ? "h-9 w-9" : "h-12 w-12"}>
-        {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
-        <AvatarFallback>{getInitials(name)}</AvatarFallback>
-      </Avatar>
+      <PlayerAvatar
+        name={name}
+        avatarUrl={avatarUrl}
+        preset={avatarPreset}
+        size={compact ? "sm" : "md"}
+      />
       <div className="flex flex-col gap-0.5 min-w-0">
         <div className="flex items-baseline gap-0 truncate">
           <span className="font-semibold text-foreground truncate">
