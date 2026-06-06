@@ -15,7 +15,6 @@ import { upsertUserFromGoogle } from "@/lib/auth/users";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  session: { strategy: "jwt" },
   callbacks: {
     ...authConfig.callbacks,
 
@@ -53,17 +52,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
       }
       return token;
-    },
-
-    /**
-     * session() inyecta los campos custom del JWT en el objeto session
-     * que reciben los componentes (server o client).
-     */
-    async session({ session, token }) {
-      if (token.userId) session.user.userId = token.userId;
-      if (token.tag) session.user.tag = token.tag;
-      if (token.role) session.user.role = token.role;
-      return session;
     },
   },
 });

@@ -18,7 +18,21 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
+  session: { strategy: "jwt" },
   callbacks: {
+    /**
+     * session() inyecta los campos custom del JWT en el objeto session.
+     *
+     * VIVE EN auth.config.ts (no en auth.ts) porque el proxy también necesita
+     * leer `role` para autorizar rutas. Es pure JS, no toca DynamoDB.
+     */
+    async session({ session, token }) {
+      if (token.userId) session.user.userId = token.userId;
+      if (token.tag) session.user.tag = token.tag;
+      if (token.role) session.user.role = token.role;
+      return session;
+    },
+
     /**
      * Se ejecuta en cada request gracias al proxy.
      * Es el "primer filtro" — chequeos rápidos basados en cookie/JWT.
