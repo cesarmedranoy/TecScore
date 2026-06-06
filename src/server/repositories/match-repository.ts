@@ -12,6 +12,7 @@ import {
   GetCommand,
   PutCommand,
   QueryCommand,
+  ScanCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "@/lib/aws/client";
@@ -121,6 +122,17 @@ export const matchRepository = {
         ExpressionAttributeNames: { "#s": "status" },
         ExpressionAttributeValues: { ":status": status },
       }),
+    );
+    return (res.Items as Match[]) ?? [];
+  },
+
+  /**
+   * Lista todos los partidos. Usa Scan — aceptable para <100 items
+   * (el Mundial tiene 64). Para crecer más allá, mover a paginated GSI.
+   */
+  async listAll(): Promise<Match[]> {
+    const res = await ddb.send(
+      new ScanCommand({ TableName: TABLES.MATCHES }),
     );
     return (res.Items as Match[]) ?? [];
   },
