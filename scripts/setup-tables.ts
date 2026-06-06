@@ -22,7 +22,7 @@ import {
   type AttributeDefinition,
   type GlobalSecondaryIndex,
 } from "@aws-sdk/client-dynamodb";
-import { PutCommand, ScanCommand } from "@aws-sdk/lib-dynamodb";
+import { GetCommand, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { config as loadEnv } from "dotenv";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
@@ -32,7 +32,16 @@ loadEnv({ path: ".env.local" });
 
 const isLocal = !!process.env.DYNAMODB_ENDPOINT;
 const TABLE_PREFIX = process.env.TABLE_PREFIX ?? "dev_";
-const ADMIN_EMAIL = "julio.medrano@tecsup.edu.pe";
+
+/**
+ * Lista de admins iniciales sembrados al hacer setup.
+ * Idempotente: si un email ya existe en la tabla, se respeta su `addedAt` original.
+ * Para agregar más admins en runtime, simplemente insertá items en la tabla.
+ */
+const SEED_ADMINS = [
+  "julio.medrano@tecsup.edu.pe",
+  "cmedrano.y@gmail.com",
+];
 
 const rawClient = new DynamoDBClient({
   region: process.env.AWS_REGION ?? "us-east-1",
@@ -291,29 +300,33 @@ const tables: CreateTableCommandInput[] = [
 ];
 
 // ============================================================================
-// Seed: insertar email admin si AdminAllowlist está vacío
+// Seed: insertar cada email de SEED_ADMINS si no existe
+// (aditivo, no destructivo — respeta el addedAt original de admins existentes)
 // ============================================================================
 
-async function seedAdminIfEmpty(): Promise<void> {
+async function seedAdmins(): Promise<void> {
   const tableName = `${TABLE_PREFIX}AdminAllowlist`;
-  const existing = await ddb.send(
-    new ScanCommand({ TableName: tableName, Limit: 1 }),
-  );
-  if (existing.Items && existing.Items.length > 0) {
-    console.log(`  ⏭️  AdminAllowlist ya tiene admins (skip seed)`);
-    return;
+  for (const rawEmail of SEED_ADMINS) {
+    const email = rawEmail.toLowerCase();
+    const existing = await ddb.send(
+      new GetCommand({ TableName: tableName, Key: { email } }),
+    );
+    if (existing.Item) {
+      console.log(`  ⏭️  ${email} (ya es admin)`);
+      continue;
+    }
+    await ddb.send(
+      new PutCommand({
+        TableName: tableName,
+        Item: {
+          email,
+          addedAt: new Date().toISOString(),
+          addedBy: "bootstrap",
+        },
+      }),
+    );
+    console.log(`  ✅ Admin sembrado: ${email}`);
   }
-  await ddb.send(
-    new PutCommand({
-      TableName: tableName,
-      Item: {
-        email: ADMIN_EMAIL,
-        addedAt: new Date().toISOString(),
-        addedBy: "bootstrap",
-      },
-    }),
-  );
-  console.log(`  ✅ Admin sembrado: ${ADMIN_EMAIL}`);
 }
 
 // ============================================================================
@@ -355,7 +368,7 @@ async function main(): Promise<void> {
   await waitForTable(`${TABLE_PREFIX}AdminAllowlist`);
 
   console.log(`\n🌱 Seeding admin:`);
-  await seedAdminIfEmpty();
+  await seedAdmins();
 
   console.log(`\n✨ Setup completo.\n`);
 }
