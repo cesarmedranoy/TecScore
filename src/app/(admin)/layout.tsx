@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { SignOutButton } from "@/components/layout/sign-out-button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { getInitials } from "@/lib/utils";
@@ -27,7 +28,7 @@ export default async function AdminLayout({
     <div className="flex min-h-screen flex-1">
       <AdminSidebar signOutSlot={<SignOutButton />} />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border px-8 py-4 flex items-center justify-between">
+        <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Avatar className="h-10 w-10">
               {session.user.image && (
@@ -43,8 +44,9 @@ export default async function AdminLayout({
               Administrador
             </Badge>
           </div>
+          <ThemeToggle />
         </header>
-        <main className="flex-1 px-8 py-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-6 py-6 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

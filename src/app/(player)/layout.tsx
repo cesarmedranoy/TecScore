@@ -48,7 +48,7 @@ export default async function PlayerLayout({
           points={points}
           streak={streak}
         />
-        <main className="flex-1 px-8 py-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 px-6 py-6 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

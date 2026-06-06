@@ -1,12 +1,14 @@
 /**
  * PlayerHeader — barra superior pegada arriba del contenido.
  *
- * Muestra el PlayerPill (avatar + nombre + puntos + racha)
- * y a la derecha un slot opcional para acciones contextuales.
+ * Muestra el PlayerPill (avatar + nombre + puntos + racha) a la izquierda
+ * y a la derecha: música, toggle tema, y un slot opcional de acciones.
  */
 
 import type { ReactNode } from "react";
 import { PlayerPill } from "@/components/gamified/player-pill";
+import { ThemeToggle } from "./theme-toggle";
+import { MusicToggle } from "./music-toggle";
 
 interface PlayerHeaderProps {
   name: string;
@@ -26,7 +28,7 @@ export function PlayerHeader({
   actions,
 }: PlayerHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border px-8 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-10 bg-card/80 backdrop-blur-md border-b border-border px-6 py-3 flex items-center justify-between gap-4">
       <PlayerPill
         name={name}
         tag={tag}
@@ -34,7 +36,11 @@ export function PlayerHeader({
         points={points}
         streak={streak}
       />
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      <div className="flex items-center gap-1">
+        {actions}
+        <MusicToggle />
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
