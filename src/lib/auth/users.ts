@@ -46,7 +46,10 @@ export async function upsertUserFromGoogle(p: GoogleProfile): Promise<User> {
 
   const ts = now();
 
-  // 2a. Existe → actualizar campos volátiles (role, nombre, avatar)
+  // 2a. Existe → actualizar SOLO role + avatarUrl (Google).
+  //     El displayName NO se toca porque el usuario lo pudo haber editado
+  //     en /perfil. Comportamiento estilo Steam: el nombre custom persiste
+  //     hasta que vuelvas a cambiarlo.
   if (existing.Items && existing.Items.length > 0) {
     const u = existing.Items[0] as User;
     await ddb.send(
@@ -54,11 +57,10 @@ export async function upsertUserFromGoogle(p: GoogleProfile): Promise<User> {
         TableName: TABLES.USERS,
         Key: { userId: u.userId },
         UpdateExpression:
-          "SET #role = :role, displayName = :name, avatarUrl = :avatar, updatedAt = :ts",
+          "SET #role = :role, avatarUrl = :avatar, updatedAt = :ts",
         ExpressionAttributeNames: { "#role": "role" },
         ExpressionAttributeValues: {
           ":role": p.role,
-          ":name": p.displayName,
           ":avatar": p.avatarUrl,
           ":ts": ts,
         },
@@ -67,7 +69,6 @@ export async function upsertUserFromGoogle(p: GoogleProfile): Promise<User> {
     return {
       ...u,
       role: p.role,
-      displayName: p.displayName,
       avatarUrl: p.avatarUrl,
       updatedAt: ts,
     };
