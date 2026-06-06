@@ -57,7 +57,7 @@ export async function createGroupAction(
       ...parsed.data,
     });
     revalidatePath("/mis-grupos");
-    redirect(`/mis-grupos/${group.groupId}`);
+    redirect(`/mis-grupos/${group.groupId}?welcome=created`);
   } catch (err) {
     if (err instanceof GroupLimitReachedError) {
       return { error: "Ya estás en 5 grupos. Salí de uno antes." };
@@ -86,7 +86,7 @@ export async function joinGroupAction(
     });
     revalidatePath("/mis-grupos");
     if (result.status === "JOINED") {
-      redirect(`/mis-grupos/${result.group.groupId}`);
+      redirect(`/mis-grupos/${result.group.groupId}?welcome=joined`);
     }
     return {
       success: `Solicitud enviada a "${result.group.name}". El owner tiene 12h para decidir.`,
@@ -125,6 +125,33 @@ export async function leaveGroupAction(groupId: string): Promise<ActionState> {
     }
     if (err instanceof GroupNotFoundError) {
       return { error: "El grupo ya no existe" };
+    }
+    throw err;
+  }
+}
+
+export async function changeVisibilityAction(
+  groupId: string,
+  visibility: "PUBLIC" | "PRIVATE",
+): Promise<ActionState> {
+  const session = await auth();
+  if (!session?.user) return { error: "No autorizado" };
+  try {
+    await groupService.changeVisibility({
+      groupId,
+      actorId: session.user.userId,
+      visibility,
+    });
+    revalidatePath(`/mis-grupos/${groupId}`);
+    return {
+      success: `Grupo cambiado a ${visibility === "PUBLIC" ? "público" : "privado"}`,
+    };
+  } catch (err) {
+    if (err instanceof GroupNotFoundError) {
+      return { error: "El grupo ya no existe" };
+    }
+    if (err instanceof NotGroupOwnerError) {
+      return { error: "Solo el owner puede cambiar la visibilidad" };
     }
     throw err;
   }

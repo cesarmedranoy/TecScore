@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -16,12 +17,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createMatchAction, type AdminActionState } from "../actions";
+import { getFlag } from "@/lib/teams/flags";
 
 const initialState: AdminActionState = {};
 
 export function CreateMatchDialog() {
   const [open, setOpen] = useState(false);
   const [state, action] = useActionState(createMatchAction, initialState);
+  const [homeTeam, setHomeTeam] = useState("");
+  const [awayTeam, setAwayTeam] = useState("");
+
+  const homeFlag = homeTeam.trim() ? getFlag(homeTeam) : "🏳️";
+  const awayFlag = awayTeam.trim() ? getFlag(awayTeam) : "🏳️";
+
+  // Toast cuando hay success/error y reset del form
+  useEffect(() => {
+    if (state.success) {
+      toast.success("⚽ Partido creado", {
+        description: state.success,
+      });
+      setHomeTeam("");
+      setAwayTeam("");
+      setOpen(false);
+    } else if (state.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -35,10 +56,29 @@ export function CreateMatchDialog() {
         <DialogHeader>
           <DialogTitle>Cargar nuevo partido</DialogTitle>
           <DialogDescription>
-            El partido queda en estado SCHEDULED. Los jugadores podrán predecir
-            hasta 10 min antes del kickoff.
+            El partido queda en estado <strong>SCHEDULED</strong>. Los jugadores
+            podrán predecir hasta 10 min antes del kickoff.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Preview en vivo */}
+        {(homeTeam || awayTeam) && (
+          <div className="rounded-lg border border-border bg-muted/30 p-4 flex items-center justify-center gap-4 text-center">
+            <div className="flex flex-col items-center gap-1 min-w-0 flex-1">
+              <span className="text-4xl leading-none">{homeFlag}</span>
+              <span className="text-sm font-semibold truncate w-full">
+                {homeTeam || "Local"}
+              </span>
+            </div>
+            <span className="text-muted-foreground text-lg font-bold">vs</span>
+            <div className="flex flex-col items-center gap-1 min-w-0 flex-1">
+              <span className="text-4xl leading-none">{awayFlag}</span>
+              <span className="text-sm font-semibold truncate w-full">
+                {awayTeam || "Visitante"}
+              </span>
+            </div>
+          </div>
+        )}
 
         <form action={action} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -65,6 +105,8 @@ export function CreateMatchDialog() {
                 id="homeTeam"
                 name="homeTeam"
                 placeholder="Argentina"
+                value={homeTeam}
+                onChange={(e) => setHomeTeam(e.target.value)}
                 required
               />
             </div>
@@ -74,6 +116,8 @@ export function CreateMatchDialog() {
                 id="awayTeam"
                 name="awayTeam"
                 placeholder="Brasil"
+                value={awayTeam}
+                onChange={(e) => setAwayTeam(e.target.value)}
                 required
               />
             </div>
@@ -88,17 +132,6 @@ export function CreateMatchDialog() {
               required
             />
           </div>
-
-          {state.error && (
-            <p className="text-sm text-danger bg-danger/10 border border-danger/30 rounded-md px-3 py-2">
-              {state.error}
-            </p>
-          )}
-          {state.success && (
-            <p className="text-sm text-success bg-success/10 border border-success/30 rounded-md px-3 py-2">
-              {state.success}
-            </p>
-          )}
 
           <DialogFooter>
             <Button

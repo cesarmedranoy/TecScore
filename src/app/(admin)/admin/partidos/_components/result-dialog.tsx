@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Minus, Plus } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { setMatchResultAction, type AdminActionState } from "../actions";
+import { getFlag } from "@/lib/teams/flags";
 import type { Match } from "@/types";
 
 const initialState: AdminActionState = {};
@@ -28,6 +30,20 @@ export function ResultDialog({ match }: ResultDialogProps) {
   const [home, setHome] = useState(match.homeScore ?? 0);
   const [away, setAway] = useState(match.awayScore ?? 0);
 
+  useEffect(() => {
+    if (state.success) {
+      toast.success("✅ Resultado guardado", {
+        description: state.success,
+        duration: 5000,
+      });
+      setOpen(false);
+    } else if (state.error) {
+      toast.error("Error al marcar resultado", {
+        description: state.error,
+      });
+    }
+  }, [state]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -39,11 +55,14 @@ export function ResultDialog({ match }: ResultDialogProps) {
         <DialogHeader>
           <DialogTitle>Marcar resultado final</DialogTitle>
           <DialogDescription>
-            {match.homeTeam} vs {match.awayTeam}
+            <span className="text-base">
+              {getFlag(match.homeTeam)} {match.homeTeam} vs {match.awayTeam}{" "}
+              {getFlag(match.awayTeam)}
+            </span>
             <br />
             <span className="text-xs text-danger">
               ⚠ Esto dispara el cálculo de puntos para todos los predictores.
-              Es idempotente — si lo marcás 2 veces, los puntos no se duplican.
+              Es idempotente — si lo marcas 2 veces, los puntos no se duplican.
             </span>
           </DialogDescription>
         </DialogHeader>

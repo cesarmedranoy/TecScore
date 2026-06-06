@@ -33,6 +33,7 @@ import { PointsBadge } from "@/components/gamified/points-badge";
 import { StreakBadge } from "@/components/gamified/streak-badge";
 import { GroupActions } from "./_components/group-actions";
 import { PendingRequests } from "./_components/pending-requests";
+import { WelcomeToast } from "./_components/welcome-toast";
 import { cn } from "@/lib/utils";
 import type { AvatarPreset, User } from "@/types";
 
@@ -100,6 +101,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col gap-8">
+      <WelcomeToast joinCode={group.joinCode} />
       <Link
         href="/mis-grupos"
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
@@ -153,6 +155,7 @@ export default async function GroupDetailPage({ params }: PageProps) {
             groupId={group.groupId}
             isOwner={isOwner}
             joinCode={group.joinCode}
+            currentVisibility={group.visibility}
           />
         </div>
       </section>

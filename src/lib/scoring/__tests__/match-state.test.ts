@@ -56,8 +56,8 @@ describe("canTransition", () => {
     expect(canTransition("FINISHED", "CANCELLED")).toBe(false);
   });
 
-  it("rechaza SCHEDULED → FINISHED (debe pasar por LIVE)", () => {
-    expect(canTransition("SCHEDULED", "FINISHED")).toBe(false);
+  it("permite SCHEDULED → FINISHED (admin marca resultado directo)", () => {
+    expect(canTransition("SCHEDULED", "FINISHED")).toBe(true);
   });
 });
 

@@ -340,6 +340,21 @@ export const groupService = {
     // se filtran en read. Igual podríamos limpiarlas en Fase 7 con un batch job.
   },
 
+  /** Cambia la visibilidad. Solo el owner puede. */
+  async changeVisibility(params: {
+    groupId: string;
+    actorId: string;
+    visibility: GroupVisibility;
+  }): Promise<void> {
+    const group = await groupRepository.getById(params.groupId);
+    if (!group) throw new GroupNotFoundError(params.groupId);
+    if (group.ownerId !== params.actorId) {
+      throw new NotGroupOwnerError(params.groupId, params.actorId);
+    }
+    if (group.visibility === params.visibility) return; // no-op
+    await groupRepository.setVisibility(params.groupId, params.visibility);
+  },
+
   /** Lista grupos donde el usuario es miembro, con detalle del grupo. */
   async listMyGroups(userId: string): Promise<Group[]> {
     const memberships = await groupMemberRepository.listByUser(userId);

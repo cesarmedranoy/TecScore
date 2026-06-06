@@ -34,7 +34,9 @@ export class InvalidMatchTransitionError extends Error {
  * "oficial" de cambiar la FSM — los tests detectan cualquier cambio.
  */
 const ALLOWED: Record<MatchStatus, readonly MatchStatus[]> = {
-  SCHEDULED: ["LIVE", "SUSPENDED", "CANCELLED"],
+  // SCHEDULED → FINISHED: admin marca resultado directo (la transición LIVE
+  // es opcional en la realidad — al admin no le interesa marcar "en vivo").
+  SCHEDULED: ["LIVE", "FINISHED", "SUSPENDED", "CANCELLED"],
   LIVE: ["FINISHED", "SUSPENDED"],
   SUSPENDED: ["LIVE", "FINISHED", "CANCELLED"],
   CANCELLED: ["RESCHEDULED"], // FIFA agrega nueva fecha

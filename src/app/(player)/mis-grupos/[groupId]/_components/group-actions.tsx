@@ -1,7 +1,8 @@
 /**
  * GroupActions — acciones del header del detalle de grupo.
  *
- *  - Compartir código de invitación (copy to clipboard)
+ *  - Compartir código de invitación (copy to clipboard + toast)
+ *  - Cambiar visibilidad (owner): público ↔ privado
  *  - Abandonar grupo (no owner)
  *  - Eliminar grupo (owner)
  */
@@ -9,7 +10,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Copy, Check, LogOut, Trash2 } from "lucide-react";
+import { Copy, Check, LogOut, Trash2, Globe, Lock } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,29 +22,72 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { deleteGroupAction, leaveGroupAction } from "../../actions";
+import {
+  changeVisibilityAction,
+  deleteGroupAction,
+  leaveGroupAction,
+} from "../../actions";
+import type { GroupVisibility } from "@/types";
 
 interface GroupActionsProps {
   groupId: string;
   isOwner: boolean;
   joinCode: string;
+  currentVisibility: GroupVisibility;
 }
 
-export function GroupActions({ groupId, isOwner, joinCode }: GroupActionsProps) {
+export function GroupActions({
+  groupId,
+  isOwner,
+  joinCode,
+  currentVisibility,
+}: GroupActionsProps) {
   const [copied, setCopied] = useState(false);
+  const [, startTransition] = useTransition();
 
   function copyCode() {
     navigator.clipboard.writeText(joinCode);
     setCopied(true);
+    toast.success("Código copiado", {
+      description: "Pásaselo a tus amigos para que se unan",
+    });
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function toggleVisibility() {
+    const next: GroupVisibility =
+      currentVisibility === "PUBLIC" ? "PRIVATE" : "PUBLIC";
+    startTransition(async () => {
+      const res = await changeVisibilityAction(groupId, next);
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(res.success ?? "Visibilidad actualizada");
+      }
+    });
+  }
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <Button variant="outline" onClick={copyCode} className="font-mono">
         {copied ? <Check className="text-success" /> : <Copy />}
         {copied ? "¡Copiado!" : joinCode}
       </Button>
+
+      {isOwner && (
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleVisibility}
+          title={
+            currentVisibility === "PUBLIC"
+              ? "Cambiar a privado"
+              : "Cambiar a público"
+          }
+        >
+          {currentVisibility === "PUBLIC" ? <Globe /> : <Lock />}
+        </Button>
+      )}
 
       {isOwner ? (
         <DangerDialog
@@ -56,6 +101,7 @@ export function GroupActions({ groupId, isOwner, joinCode }: GroupActionsProps) 
           confirmLabel="Eliminar grupo"
           action={async () => {
             await deleteGroupAction(groupId);
+            toast.success("Grupo eliminado");
           }}
         />
       ) : (
@@ -66,10 +112,11 @@ export function GroupActions({ groupId, isOwner, joinCode }: GroupActionsProps) 
             </Button>
           }
           title="¿Salir del grupo?"
-          description="Vas a perder tu posición en este ranking. Podés volver con el código si es público."
+          description="Pierdes tu posición en este ranking. Puedes volver con el código si es público."
           confirmLabel="Salir"
           action={async () => {
             await leaveGroupAction(groupId);
+            toast.success("Saliste del grupo");
           }}
         />
       )}
