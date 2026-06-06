@@ -1,15 +1,14 @@
 /**
  * MusicToggle — botón para prender/silenciar la música del lobby.
  *
- * Howler.js maneja el audio (carga, loop, fade, volumen).
+ * Implementación senior tras debug:
+ *  - SIN fade (HTML5 audio + Howler.fade da saltos raros). Play/pause directo.
+ *  - Strict-mode safe: una flag `cancelled` evita callbacks de Howl viejos.
+ *  - Si el archivo no existe, el botón se oculta silenciosamente.
+ *  - El estado se persiste en localStorage; el browser sigue bloqueando
+ *    autoplay sin click, así que el usuario siempre arranca con un click.
  *
- * Reglas:
- *  - Default mute (los browsers bloquean autoplay sin interacción).
- *  - La preferencia se persiste en localStorage.
- *  - Fade-in/out de 500ms al alternar (no corte abrupto).
- *
- * Track esperado: `public/audio/lobby.mp3` (mp3 libre de derechos).
- * Si el archivo no existe, el botón se deshabilita silenciosamente.
+ * Track esperado en `public/audio/` (path en TRACK_PATH).
  */
 
 "use client";
@@ -22,7 +21,6 @@ import { Button } from "@/components/ui/button";
 const STORAGE_KEY = "tecscore-music-muted";
 const TRACK_PATH = "/audio/daidai_shakira.mp3";
 const VOLUME = 0.25;
-const FADE_MS = 500;
 
 export function MusicToggle() {
   const [muted, setMuted] = useState(true);
@@ -31,56 +29,63 @@ export function MusicToggle() {
   const howlRef = useRef<Howl | null>(null);
 
   useEffect(() => {
-    let saved: string | null = null;
-    try {
-      saved = localStorage.getItem(STORAGE_KEY);
-    } catch {}
-    const initial = saved === null ? true : saved === "true";
-    setMuted(initial);
+    let cancelled = false;
 
-    howlRef.current = new Howl({
+    // Leer preferencia previa (default: mute)
+    let savedMuted = true;
+    try {
+      const v = localStorage.getItem(STORAGE_KEY);
+      savedMuted = v === null ? true : v === "true";
+    } catch {
+      /* localStorage bloqueado (modo incógnito) */
+    }
+    setMuted(savedMuted);
+
+    const h = new Howl({
       src: [TRACK_PATH],
       loop: true,
-      volume: 0,
-      html5: true, // streaming en vez de descarga completa
+      volume: VOLUME,
+      html5: true, // streaming para tracks largos
       onload: () => {
+        if (cancelled) return;
         setReady(true);
-        if (!initial) {
-          howlRef.current?.play();
-          howlRef.current?.fade(0, VOLUME, FADE_MS);
-        }
       },
-      onloaderror: () => {
-        // El archivo no existe — desactivamos el botón silenciosamente
+      onloaderror: (_, err) => {
+        if (cancelled) return;
+        console.warn("[MusicToggle] no se pudo cargar el track:", err);
         setAvailable(false);
         setReady(true);
       },
     });
+    howlRef.current = h;
 
     return () => {
-      howlRef.current?.unload();
+      cancelled = true;
+      h.stop();
+      h.unload();
+      if (howlRef.current === h) howlRef.current = null;
     };
   }, []);
 
   function toggle() {
+    const h = howlRef.current;
+    if (!h || !ready) return;
     const next = !muted;
     setMuted(next);
     try {
       localStorage.setItem(STORAGE_KEY, String(next));
     } catch {}
-    if (!howlRef.current) return;
     if (next) {
-      howlRef.current.fade(VOLUME, 0, FADE_MS);
-      setTimeout(() => howlRef.current?.pause(), FADE_MS);
+      // Silenciar = pause
+      if (h.playing()) h.pause();
     } else {
-      if (!howlRef.current.playing()) howlRef.current.play();
-      howlRef.current.fade(0, VOLUME, FADE_MS);
+      // Activar = play (asegurando volumen correcto por si quedó en 0)
+      h.volume(VOLUME);
+      h.play();
     }
   }
 
-  if (!available) {
-    return null;
-  }
+  if (!available) return null;
 
   return (
     <Button
