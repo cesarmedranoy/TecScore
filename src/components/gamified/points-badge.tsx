@@ -1,12 +1,11 @@
 /**
  * PointsBadge — pill dorado con la cantidad de puntos del jugador.
  *
- * Es el "score visible" del dashboard. Se ve en la esquina superior
- * del header. Diseño: gradient sutil dorado + ícono de la copa del
- * Mundial (imagen custom en `public/icons/cup-coin.png`).
+ * El ícono es la imagen del trofeo del Mundial en `public/icons/cup-coin.png`
+ * (PNG con fondo transparente). Si no existe, cae al ícono Lucide.
  *
- * Si la imagen no existe todavía, mostramos un fallback en SVG inline
- * para que no se vea roto durante el desarrollo.
+ * Diseño: el trofeo es el protagonista visual — sobresale del pill ligeramente
+ * y tiene una sombra dorada sutil para destacarlo (drop-shadow gold).
  */
 
 "use client";
@@ -23,9 +22,9 @@ interface PointsBadgeProps {
 }
 
 const sizeConfig = {
-  sm: { wrapper: "h-7 px-2.5 text-xs gap-1.5", icon: 14 },
-  md: { wrapper: "h-9 px-3.5 text-sm gap-2", icon: 18 },
-  lg: { wrapper: "h-11 px-5 text-base gap-2.5", icon: 22 },
+  sm: { wrapper: "h-7 pl-1 pr-2.5 text-xs gap-1.5", icon: 22 },
+  md: { wrapper: "h-9 pl-1 pr-3.5 text-sm gap-2", icon: 30 },
+  lg: { wrapper: "h-11 pl-1.5 pr-5 text-base gap-2.5", icon: 38 },
 } as const;
 
 export function PointsBadge({
@@ -50,7 +49,7 @@ export function PointsBadge({
       {imgFailed ? (
         <Trophy
           className="text-amber-600 dark:text-amber-400"
-          style={{ width: icon, height: icon }}
+          style={{ width: icon * 0.55, height: icon * 0.55 }}
         />
       ) : (
         <Image
@@ -58,13 +57,15 @@ export function PointsBadge({
           alt="Copa del Mundial"
           width={icon}
           height={icon}
-          className="drop-shadow-sm"
+          className="drop-shadow-[0_2px_4px_rgba(234,179,8,0.4)] -my-1"
           onError={() => setImgFailed(true)}
           unoptimized
           priority={size === "lg"}
         />
       )}
-      <span className="tabular-nums">{points.toLocaleString("es-PE")}</span>
+      <span className="tabular-nums leading-none">
+        {points.toLocaleString("es-PE")}
+      </span>
       <span className="text-amber-700/70 dark:text-amber-400/70 text-[0.85em] font-medium">
         pts
       </span>
