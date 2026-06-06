@@ -12,7 +12,10 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:setup": "tsx scripts/setup-tables.ts",
-    "db:reset": "tsx scripts/reset-tables.ts"
+    "db:reset": "tsx scripts/reset-tables.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1063.0",
@@ -30,10 +33,12 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
     "tsx": "^4.22.4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
