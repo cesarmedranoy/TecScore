@@ -7,8 +7,9 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { SignOutButton } from "@/components/layout/sign-out-button";
-import { Avatar, AvatarFallback, AvatarImage, getInitials } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { getInitials } from "@/lib/utils";
 
 export default async function AdminLayout({
   children,

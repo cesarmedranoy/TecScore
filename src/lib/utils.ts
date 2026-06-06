@@ -42,3 +42,18 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Extrae iniciales de un nombre ("Cesar Medrano" → "CM").
+ *
+ * Vive acá (no en avatar.tsx) porque servidor y cliente la usan: los layouts
+ * la llaman al renderizar y los componentes interactivos también.
+ */
+export function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase() ?? "")
+    .join("");
+}

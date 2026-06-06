@@ -25,12 +25,12 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage, getInitials } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PointsBadge } from "@/components/gamified/points-badge";
 import { StreakBadge } from "@/components/gamified/streak-badge";
 import { GroupActions } from "./_components/group-actions";
 import { PendingRequests } from "./_components/pending-requests";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 interface PageProps {
   params: Promise<{ groupId: string }>;

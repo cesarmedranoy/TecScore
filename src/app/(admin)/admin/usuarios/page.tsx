@@ -8,7 +8,8 @@ import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 import { TABLES } from "@/lib/aws/tables";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage, getInitials } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/utils";
 import type { User } from "@/types";
 
 export default async function AdminUsuariosPage() {

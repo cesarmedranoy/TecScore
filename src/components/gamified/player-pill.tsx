@@ -7,10 +7,10 @@
  *    NombreEjemplo#tag12f 100 (icono de puntos) pts"
  */
 
-import { Avatar, AvatarFallback, AvatarImage, getInitials } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PointsBadge } from "./points-badge";
 import { StreakBadge } from "./streak-badge";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
 interface PlayerPillProps {
   name: string;
