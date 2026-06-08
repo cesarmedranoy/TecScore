@@ -41,6 +41,7 @@ const TABLE_PREFIX = process.env.TABLE_PREFIX ?? "dev_";
 const SEED_ADMINS = [
   "julio.medrano@tecsup.edu.pe",
   "cmedrano.y@gmail.com",
+  "arnold.alva.torres@gmail.com"
 ];
 
 const rawClient = new DynamoDBClient({
@@ -293,6 +294,22 @@ const tables: CreateTableCommandInput[] = [
           { AttributeName: "actorId", KeyType: "HASH" },
           { AttributeName: "timestamp", KeyType: "RANGE" },
         ],
+        Projection: { ProjectionType: "ALL" },
+      },
+    ],
+  ),
+
+  buildTable(
+    "SpecialEvents",
+    [{ AttributeName: "eventId", KeyType: "HASH" }],
+    [
+      { AttributeName: "eventId", AttributeType: "S" },
+      { AttributeName: "status", AttributeType: "S" },
+    ],
+    [
+      {
+        IndexName: "byStatus",
+        KeySchema: [{ AttributeName: "status", KeyType: "HASH" }],
         Projection: { ProjectionType: "ALL" },
       },
     ],

@@ -204,3 +204,40 @@ export interface AuditLogEntry {
   diff?: Record<string, { from: unknown; to: unknown }>;
   ip?: string;
 }
+
+// ============================================================================
+// Eventos especiales (admin los crea)
+// ============================================================================
+
+/**
+ * Tipos de evento especial.
+ *  - CHAMPION_PICK → ¿Quién ganará el Mundial? (el primero que usamos)
+ *  - YES_NO        → Pregunta de sí/no (extensible a futuro)
+ *  - TOP_SCORER    → ¿Quién será el goleador? (extensible a futuro)
+ */
+export type SpecialEventType =
+  | "CHAMPION_PICK"
+  | "YES_NO"
+  | "TOP_SCORER";
+
+export type SpecialEventStatus =
+  | "DRAFT"      // creado por el admin pero no visible aún para jugadores
+  | "ACTIVE"     // visible y aceptando respuestas
+  | "CLOSED"     // venció la fecha, ya no acepta respuestas
+  | "RESOLVED";  // admin resolvió → puntos ya otorgados
+
+export interface SpecialEvent {
+  eventId: string;          // ULID
+  type: SpecialEventType;
+  title: string;            // "¿Quién ganará el Mundial 2026?"
+  description?: string;
+  points: number;           // puntos en juego (ej: 100)
+  opensAt: string;          // ISO — cuándo empieza a aceptar respuestas
+  closesAt: string;         // ISO — cuándo deja de aceptar respuestas
+  status: SpecialEventStatus;
+  correctAnswer?: string;   // se llena cuando el admin resuelve el evento
+  resolvedAt?: string;
+  createdBy: string;        // userId del admin que lo creó
+  createdAt: string;
+  updatedAt: string;
+}

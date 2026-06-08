@@ -104,4 +104,26 @@ export const userRepository = {
       }),
     );
   },
+
+  /** Guarda el país predicho como campeón por el usuario. */
+  async updateChampionPick(userId: string, country: string): Promise<void> {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: TABLES.USERS,
+        Key: { userId },
+        UpdateExpression:
+          "SET predictedChampionId = :c, updatedAt = :t",
+        ExpressionAttributeValues: { ":c": country, ":t": now() },
+      }),
+    );
+  },
+
+  /** Trae todos los usuarios — solo se usa para resolver el campeón al final. */
+  async listAll(): Promise<User[]> {
+    const { ScanCommand } = await import("@aws-sdk/lib-dynamodb");
+    const res = await ddb.send(
+      new ScanCommand({ TableName: TABLES.USERS }),
+    );
+    return (res.Items as User[]) ?? [];
+  },
 };

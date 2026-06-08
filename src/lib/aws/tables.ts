@@ -25,6 +25,7 @@ export const TABLES = {
   NOTIFICATIONS: `${prefix}Notifications`,
   CHAT_MESSAGES: `${prefix}ChatMessages`,
   AUDIT_LOG: `${prefix}AuditLog`,
+  SPECIAL_EVENTS: `${prefix}SpecialEvents`,
 } as const;
 
 export type TableName = (typeof TABLES)[keyof typeof TABLES];
