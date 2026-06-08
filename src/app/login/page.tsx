@@ -60,7 +60,7 @@ export default function LoginPage() {
         {/* Stats rápidos */}
         <div className="flex items-center gap-6 mb-10">
           {[
-            { num: "64",    label: "Partidos"     },
+            { num: "104",    label: "Partidos"     },
             { num: "5",     label: "Grupos máx."  },
             { num: "0 pts", label: "Para empezar" },
           ].map((s, i) => (
