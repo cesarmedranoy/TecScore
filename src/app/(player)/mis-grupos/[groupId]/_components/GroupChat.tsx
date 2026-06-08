@@ -1,10 +1,7 @@
 /**
- * ChatWindow — UI de la conversación.
+ * GroupChat — chat en tiempo real del grupo.
  *
- *  - Lista de mensajes con scroll auto al final
- *  - Polling cada 3s para nuevos mensajes
- *  - Input + botón enviar (server action)
- *  - Burbujas estilo iMessage: derecha tú, izquierda amigo
+ * Guarda en: src/app/(player)/mis-grupos/[groupId]/_components/GroupChat.tsx
  */
 
 "use client";
@@ -13,52 +10,48 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { sendDmAction } from "../../actions";
 import { cn } from "@/lib/utils";
+import { sendGroupMessageAction } from "../actions-chat";
 import type { ChatMessage } from "@/types";
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 3_000;
 const MAX_LENGTH = 500;
 
-interface ChatWindowProps {
-  friendId: string;
+interface GroupChatProps {
+  groupId: string;
   myUserId: string;
   initialMessages: ChatMessage[];
+  fullHeight?: boolean; // true = ocupa toda la altura disponible
 }
 
-export function ChatWindow({
-  friendId,
+export function GroupChat({
+  groupId,
   myUserId,
   initialMessages,
-}: ChatWindowProps) {
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
-  const [text, setText] = useState("");
-  const [pending, startTransition] = useTransition();
+  fullHeight = false,
+}: GroupChatProps) {
+  const [messages, setMessages]        = useState<ChatMessage[]>(initialMessages);
+  const [text, setText]                = useState("");
+  const [pending, startTransition]     = useTransition();
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef  = useRef<HTMLTextAreaElement>(null);
 
   // Polling
   useEffect(() => {
     let cancelled = false;
     async function fetchMessages() {
       try {
-        const r = await fetch(`/api/chats/${friendId}/messages`, {
+        const r = await fetch(`/api/groups/${groupId}/messages`, {
           cache: "no-store",
         });
         if (!r.ok) return;
         const data = (await r.json()) as { messages: ChatMessage[] };
-        if (cancelled) return;
-        setMessages(data.messages);
-      } catch {
-        /* silent */
-      }
+        if (!cancelled) setMessages(data.messages);
+      } catch { /* silent */ }
     }
     const id = setInterval(fetchMessages, POLL_INTERVAL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [friendId]);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [groupId]);
 
   // Scroll al final cuando llegan mensajes
   useEffect(() => {
@@ -75,21 +68,18 @@ export function ChatWindow({
     setText("");
     inputRef.current?.focus();
     startTransition(async () => {
-      const res = await sendDmAction(friendId, trimmed);
+      const res = await sendGroupMessageAction(groupId, trimmed);
       if (res.error) {
         toast.error(res.error);
-        setText(trimmed); // restaurar lo que tipeó
+        setText(trimmed);
       } else {
-        // Refrescar inmediatamente sin esperar el polling
         try {
-          const r = await fetch(`/api/chats/${friendId}/messages`, {
+          const r = await fetch(`/api/groups/${groupId}/messages`, {
             cache: "no-store",
           });
           const data = (await r.json()) as { messages: ChatMessage[] };
           setMessages(data.messages);
-        } catch {
-          /* el polling lo agarra después */
-        }
+        } catch { /* el polling lo agarra */ }
       }
     });
   }
@@ -102,30 +92,44 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex-1 flex flex-col border border-border rounded-lg bg-card overflow-hidden">
+    <div
+      className={cn(
+        "flex flex-col border border-border rounded-xl bg-card overflow-hidden",
+        fullHeight ? "h-full" : "h-[500px]",
+      )}
+    >
+      {/* Header — solo en modo embebido */}
+      {!fullHeight && (
+        <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center justify-between shrink-0">
+          <p className="font-semibold text-sm">Chat del grupo</p>
+          <span className="text-[11px] text-muted-foreground">
+            {messages.length} mensajes
+          </span>
+        </div>
+      )}
+
       {/* Mensajes */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
         {messages.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center px-4">
-            <p>
-              Aún no hay mensajes.
-              <br />
-              ¡Manda el primero!
-            </p>
+          <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground text-center">
+            <p>Aún no hay mensajes. ¡Sé el primero en escribir!</p>
           </div>
         ) : (
-          messages.map((m) => {
+          messages.map((m, idx) => {
             const isMe = m.userId === myUserId;
+            const prevMsg = messages[idx - 1];
+            const showName = !isMe && prevMsg?.userId !== m.userId;
+
             return (
               <div
                 key={m.messageId}
                 className={cn(
-                  "flex flex-col gap-1 max-w-[75%]",
+                  "flex flex-col gap-0.5 max-w-[75%]",
                   isMe ? "self-end items-end" : "self-start items-start",
                 )}
               >
-                {!isMe && (
-                  <span className="text-[10px] text-muted-foreground ml-3">
+                {showName && (
+                  <span className="text-[10px] text-muted-foreground ml-2 font-medium">
                     {m.userName}
                   </span>
                 )}
@@ -139,9 +143,9 @@ export function ChatWindow({
                 >
                   {m.text}
                 </div>
-                <span className="text-[10px] text-muted-foreground px-2">
+                <span className="text-[10px] text-muted-foreground px-2" suppressHydrationWarning>
                   {formatTime(m.createdAt)}
-                </span>
+                  </span>
               </div>
             );
           })
@@ -150,7 +154,7 @@ export function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="border-t border-border p-3 flex items-end gap-2 bg-card">
+      <div className="border-t border-border p-3 flex items-end gap-2 bg-card shrink-0">
         <textarea
           ref={inputRef}
           value={text}
@@ -179,9 +183,8 @@ export function ChatWindow({
 }
 
 function formatTime(iso: string): string {
-  if (typeof window === "undefined") return ""; // servidor → string vacío
-  const d = new Date(iso);
-  return d.toLocaleTimeString("es-PE", {
+  if (typeof window === "undefined") return "";
+  return new Date(iso).toLocaleTimeString("es-PE", {
     hour: "2-digit",
     minute: "2-digit",
   });

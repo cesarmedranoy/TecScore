@@ -1,11 +1,5 @@
 /**
  * /mis-grupos/[groupId] — detalle del grupo con ranking.
- *
- * Acceso restringido: solo miembros del grupo (o admin del sistema).
- * Si no eres miembro → 403 visual con CTA para volver.
- *
- * El ranking usa PlayerAvatar (no Avatar plano) para respetar el preset
- * elegido por cada usuario (foto Google, foto custom o bandera).
  */
 
 import { redirect, notFound } from "next/navigation";
@@ -17,6 +11,7 @@ import {
   Globe,
   Users,
   Medal,
+  MessageCircle,
 } from "lucide-react";
 import { auth } from "@/auth";
 import {
@@ -243,6 +238,18 @@ export default async function GroupDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         )}
+      </section>
+
+      {/* Chat grupal — botón que lleva a página dedicada */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-2xl font-bold tracking-tight">Chat del grupo</h2>
+        <Link
+          href={`/mis-grupos/${groupId}/chat`}
+          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors w-fit"
+        >
+          <MessageCircle className="size-4" />
+          Abrir chat del grupo
+        </Link>
       </section>
     </div>
   );
