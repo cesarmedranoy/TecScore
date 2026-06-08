@@ -147,8 +147,17 @@ export interface Friendship {
   userId: string;
   friendId: string;
   status: "PENDING" | "ACCEPTED" | "BLOCKED";
+  /** userId de quien inició la solicitud (para distinguir incoming/outgoing). */
+  requestedBy: string;
   createdAt: string;
 }
+
+export type FriendshipRelation =
+  | "NONE"
+  | "PENDING_SENT"      // yo le envié, espero respuesta
+  | "PENDING_RECEIVED"  // me llegó, debo decidir
+  | "ACCEPTED"          // somos amigos
+  | "SELF";             // soy yo mismo, no hay relación posible
 
 export interface Notification {
   userId: string;

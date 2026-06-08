@@ -34,3 +34,7 @@ export {
   notificationRepository,
   buildNotification,
 } from "./notification-repository";
+export {
+  friendshipRepository,
+  getRelation,
+} from "./friendship-repository";

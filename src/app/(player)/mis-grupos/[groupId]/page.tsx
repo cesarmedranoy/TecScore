@@ -288,30 +288,34 @@ function PodiumCard({
 
   return (
     <div className="flex flex-col items-center gap-2 mt-auto">
-      <div
-        className={cn(
-          "rounded-full ring-4 p-0.5",
-          ring[position],
-          isMe && "ring-offset-2 ring-offset-background",
-        )}
-      >
-        <PlayerAvatar
-          name={user.displayName}
-          avatarUrl={user.avatarUrl}
-          customAvatarDataUrl={user.customAvatarDataUrl}
-          preset={preset}
-          size="lg"
-        />
-      </div>
-      <div className="text-center min-w-0 max-w-full">
-        <p className="font-semibold truncate text-sm">
-          {user.displayName}
-          <span className="text-muted-foreground font-normal">
-            #{user.tag}
-          </span>
-        </p>
-        <PointsBadge points={user.totalPoints} size="sm" className="mt-1" />
-      </div>
+      <ProfileHoverCard userId={user.userId}>
+        <div className="flex flex-col items-center gap-2">
+          <div
+            className={cn(
+              "rounded-full ring-4 p-0.5 transition-transform hover:scale-105",
+              ring[position],
+              isMe && "ring-offset-2 ring-offset-background",
+            )}
+          >
+            <PlayerAvatar
+              name={user.displayName}
+              avatarUrl={user.avatarUrl}
+              customAvatarDataUrl={user.customAvatarDataUrl}
+              preset={preset}
+              size="lg"
+            />
+          </div>
+          <div className="text-center min-w-0 max-w-full">
+            <p className="font-semibold truncate text-sm">
+              {user.displayName}
+              <span className="text-muted-foreground font-normal">
+                #{user.tag}
+              </span>
+            </p>
+            <PointsBadge points={user.totalPoints} size="sm" className="mt-1" />
+          </div>
+        </div>
+      </ProfileHoverCard>
       <Card
         elevation={position === 1 ? "glow" : "raised"}
         className={cn(

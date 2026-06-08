@@ -1,12 +1,6 @@
 /**
  * ProfileHoverCard — preview con stats + últimas apuestas al hover sobre
- * un avatar.
- *
- * Patrón:
- *  - Wrapper alrededor del trigger (avatar + nombre del jugador)
- *  - Al hover 400ms → fetch al endpoint `/api/users/:id/preview`
- *  - Muestra: avatar + nombre + puntos + racha + 6 últimas predicciones
- *  - Cierra al alejar el cursor
+ * un avatar. Click sobre el footer abre el ProfileModal completo.
  *
  * Cachea el fetch en memoria por userId para no re-pegarle al server.
  */
@@ -24,8 +18,8 @@ import { PlayerAvatar } from "./player-avatar";
 import { PointsBadge } from "./points-badge";
 import { StreakBadge } from "./streak-badge";
 import { Badge } from "@/components/ui/badge";
+import { ProfileModal } from "./profile-modal";
 import { getFlag } from "@/lib/teams/flags";
-import { cn } from "@/lib/utils";
 import type { AvatarPreset } from "@/types";
 
 interface UserPreview {
@@ -58,7 +52,6 @@ interface ApiResponse {
   recentPredictions: RecentPrediction[];
 }
 
-// Cache simple en memoria por userId
 const cache = new Map<string, Promise<ApiResponse>>();
 
 function fetchPreview(userId: string): Promise<ApiResponse> {
@@ -82,6 +75,7 @@ interface ProfileHoverCardProps {
 export function ProfileHoverCard({ userId, children }: ProfileHoverCardProps) {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [error, setError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   async function handleOpenChange(open: boolean) {
     if (open && !data && !error) {
@@ -95,29 +89,58 @@ export function ProfileHoverCard({ userId, children }: ProfileHoverCardProps) {
   }
 
   return (
-    <HoverCard openDelay={400} closeDelay={150} onOpenChange={handleOpenChange}>
-      <HoverCardTrigger asChild>
-        <span className="cursor-pointer">{children}</span>
-      </HoverCardTrigger>
-      <HoverCardContent className="w-96 p-0 overflow-hidden">
-        {!data && !error && <PreviewSkeleton />}
-        {error && (
-          <div className="p-4 text-sm text-muted-foreground text-center">
-            No se pudo cargar el perfil
-          </div>
-        )}
-        {data && <PreviewContent data={data} />}
-      </HoverCardContent>
-    </HoverCard>
+    <>
+      <HoverCard openDelay={400} closeDelay={200} onOpenChange={handleOpenChange}>
+        <HoverCardTrigger asChild>
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={() => setModalOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") setModalOpen(true);
+            }}
+            className="cursor-pointer inline-block transition-transform hover:scale-[1.02]"
+          >
+            {children}
+          </span>
+        </HoverCardTrigger>
+        <HoverCardContent className="w-96 p-0 overflow-hidden">
+          {!data && !error && <PreviewSkeleton />}
+          {error && (
+            <div className="p-4 text-sm text-muted-foreground text-center">
+              No se pudo cargar el perfil
+            </div>
+          )}
+          {data && (
+            <PreviewContent
+              data={data}
+              onOpenFull={() => setModalOpen(true)}
+            />
+          )}
+        </HoverCardContent>
+      </HoverCard>
+
+      <ProfileModal
+        userId={userId}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+      />
+    </>
   );
 }
 
-function PreviewContent({ data }: { data: ApiResponse }) {
+function PreviewContent({
+  data,
+  onOpenFull,
+}: {
+  data: ApiResponse;
+  onOpenFull: () => void;
+}) {
   const { user, recentPredictions } = data;
 
   return (
     <div className="flex flex-col">
-      {/* Header con avatar grande */}
+      {/* Header */}
       <div className="relative bg-gradient-to-br from-emerald-600 to-emerald-800 p-4 text-white">
         <div className="absolute -right-8 -top-8 size-24 rounded-full bg-amber-400/20 blur-2xl" />
         <div className="relative flex items-center gap-3">
@@ -159,12 +182,14 @@ function PreviewContent({ data }: { data: ApiResponse }) {
           <Flame className="size-4 text-orange-500" />
           <div className="text-xs">
             <p className="text-muted-foreground">Predicciones</p>
-            <p className="font-semibold">{recentPredictions.length > 0 ? "Activo" : "Sin actividad"}</p>
+            <p className="font-semibold">
+              {recentPredictions.length > 0 ? "Activo" : "Sin actividad"}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Últimas predicciones */}
+      {/* Últimas apuestas */}
       <div className="px-4 py-3">
         <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           Últimas apuestas
@@ -203,10 +228,15 @@ function PreviewContent({ data }: { data: ApiResponse }) {
         )}
       </div>
 
-      {/* Footer hint */}
-      <div className="px-4 py-2 border-t border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-        Click para perfil completo <ArrowRight className="size-3" />
-      </div>
+      {/* Footer clickable */}
+      <button
+        type="button"
+        onClick={onOpenFull}
+        className="px-4 py-2.5 border-t border-border bg-muted/30 text-xs font-medium hover:bg-muted/60 transition-colors flex items-center justify-center gap-1 text-primary"
+      >
+        Ver perfil completo
+        <ArrowRight className="size-3" />
+      </button>
     </div>
   );
 }
@@ -223,5 +253,3 @@ function PreviewSkeleton() {
     </div>
   );
 }
-
-export { cn };
