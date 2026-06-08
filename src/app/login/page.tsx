@@ -100,7 +100,6 @@ export default function LoginPage() {
 
           <p className="text-[11px] text-white/25 text-center mt-4 leading-relaxed">
             Al continuar aceptas crear una cuenta en TecScore.<br />
-            Tu rol (jugador o administrador) se detecta automáticamente.
           </p>
         </div>
       </div>

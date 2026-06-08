@@ -8,7 +8,7 @@ const LEGENDS = [
     country: "🇵🇹 Portugal · CR7",
     number: "7",
     quote: "Los trofeos no te buscan a ti, eres tú quien los busca.",
-    accent: "rgba(16,185,89,0.15)",
+    accent: "rgba(16,185,89,0.18)",
     image: "/legends/ronaldo.png",
   },
   {
@@ -16,7 +16,7 @@ const LEGENDS = [
     country: "🇦🇷 Argentina · La Pulga",
     number: "10",
     quote: "Hay que trabajar mucho para lograr algo.",
-    accent: "rgba(59,130,246,0.15)",
+    accent: "rgba(59,130,246,0.18)",
     image: "/legends/messi.png",
   },
   {
@@ -24,7 +24,7 @@ const LEGENDS = [
     country: "🇧🇷 Brasil · El Mago",
     number: "10",
     quote: "Juega con alegría. Eso es todo lo que necesitas.",
-    accent: "rgba(250,204,21,0.15)",
+    accent: "rgba(250,204,21,0.18)",
     image: "/legends/ronaldinho.png",
   },
   {
@@ -32,7 +32,7 @@ const LEGENDS = [
     country: "🇦🇷 Argentina · El Pibe",
     number: "10",
     quote: "El fútbol es el deporte más hermoso del mundo.",
-    accent: "rgba(14,165,233,0.15)",
+    accent: "rgba(14,165,233,0.18)",
     image: "/legends/maradona.png",
   },
   {
@@ -40,7 +40,7 @@ const LEGENDS = [
     country: "🇧🇷 Brasil · O Rei",
     number: "10",
     quote: "El éxito no es accidente. Es trabajo duro y aprendizaje.",
-    accent: "rgba(245,158,11,0.15)",
+    accent: "rgba(245,158,11,0.18)",
     image: "/legends/pele.png",
   },
 ];
@@ -84,17 +84,17 @@ export function LegendCarousel() {
         <line x1="20" y1="300" x2="320" y2="300" stroke="white" strokeWidth="1" />
       </svg>
 
-      {/* Gradiente inferior — hace que la imagen se integre al fondo */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none z-10" />
+      {/* Gradiente inferior — integra el jugador al fondo */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/10 to-transparent pointer-events-none z-10" />
 
-      {/* Gradiente lateral izquierdo — separación suave con el panel de login */}
-      <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#0a0a0a] to-transparent pointer-events-none z-10" />
+      {/* Gradiente lateral izquierdo */}
+      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0a0a0a] to-transparent pointer-events-none z-10" />
 
-      {/* Overlay de color del jugador — cambia con cada leyenda */}
+      {/* Overlay de color por jugador */}
       <div
         className="absolute inset-0 pointer-events-none z-10 transition-all duration-700"
         style={{
-          background: `radial-gradient(ellipse at 50% 35%, ${leg.accent} 0%, transparent 65%)`,
+          background: `radial-gradient(ellipse at 50% 30%, ${leg.accent} 0%, transparent 60%)`,
         }}
       />
 
@@ -108,62 +108,60 @@ export function LegendCarousel() {
 
       {/* Número gigante de fondo */}
       <div
-        className="absolute right-6 z-10 font-black text-white leading-none select-none transition-all duration-500"
+        className="absolute right-4 z-10 font-black text-white leading-none select-none transition-all duration-500"
         style={{
-          fontSize: "clamp(100px, 18vw, 160px)",
+          fontSize: "clamp(120px, 22vw, 200px)",
           opacity: transitioning ? 0 : 0.05,
-          bottom: "80px",
+          bottom: "60px",
         }}
         aria-hidden="true"
       >
         {leg.number}
       </div>
 
-      {/* ── Imagen del jugador ── */}
+      {/* ── Imagen del jugador — ocupa casi todo el panel ── */}
       <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 w-72 transition-all duration-350 pointer-events-none"
+        className="absolute inset-x-0 bottom-0 z-20 pointer-events-none transition-all duration-350"
         style={{
-          height: "75%",
+          top: "20%",
           opacity: transitioning ? 0 : 1,
-          transform: transitioning
-            ? "translateX(-50%) translateY(12px)"
-            : "translateX(-50%) translateY(0px)",
-          // Desvanece la imagen suavemente hacia abajo — efecto pro
-          WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 18%, black 100%)",
-          maskImage: "linear-gradient(to top, transparent 0%, black 18%, black 100%)",
+          transform: transitioning ? "translateY(16px)" : "translateY(0px)",
+          // Desvanece suavemente solo los últimos píxeles del pie
+          WebkitMaskImage: "linear-gradient(to top, transparent 0%, black 12%, black 100%)",
+          maskImage: "linear-gradient(to top, transparent 0%, black 12%, black 100%)",
         }}
       >
         <Image
           src={leg.image}
           alt={leg.name}
           fill
-          className="object-contain object-bottom drop-shadow-2xl"
+          className="object-contain object-bottom"
           priority
-          sizes="(max-width: 1024px) 0px, 288px"
+          sizes="(max-width: 1024px) 0px, 50vw"
         />
       </div>
 
-      {/* Info del jugador */}
+      {/* Info del jugador — abajo a la derecha */}
       <div
-        className="absolute bottom-14 right-6 z-30 text-right transition-all duration-350 pointer-events-none"
+        className="absolute bottom-12 right-6 z-30 text-right transition-all duration-350 pointer-events-none"
         style={{
           opacity: transitioning ? 0 : 1,
           transform: transitioning ? "translateY(10px)" : "translateY(0)",
         }}
       >
-        <h2 className="text-[28px] font-black text-white tracking-tight leading-tight">
+        <h2 className="text-3xl font-black text-white tracking-tight leading-tight drop-shadow-lg">
           {leg.name}
         </h2>
-        <p className="text-white/45 text-[11px] uppercase tracking-widest font-semibold mt-1">
+        <p className="text-white/50 text-[11px] uppercase tracking-widest font-semibold mt-1">
           {leg.country}
         </p>
-        <p className="text-white/55 text-sm italic mt-3 max-w-[210px] leading-snug">
+        <p className="text-white/60 text-sm italic mt-3 max-w-[220px] leading-snug drop-shadow">
           &ldquo;{leg.quote}&rdquo;
         </p>
       </div>
 
       {/* Puntos de navegación */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5">
         {LEGENDS.map((_, i) => (
           <button
             key={i}
@@ -172,8 +170,7 @@ export function LegendCarousel() {
             className="h-1.5 rounded-full transition-all duration-300 cursor-pointer"
             style={{
               width: i === current ? "18px" : "6px",
-              background:
-                i === current ? "#10b959" : "rgba(255,255,255,0.2)",
+              background: i === current ? "#10b959" : "rgba(255,255,255,0.2)",
             }}
           />
         ))}
