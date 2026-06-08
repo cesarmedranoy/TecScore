@@ -74,7 +74,6 @@ export default function LoginPage() {
         {/* ── Card de login ── */}
         <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-7 max-w-sm w-full">
           <p className="text-white font-semibold text-base mb-1">Entrar a TecScore</p>
-          <p className="text-white/40 text-sm mb-5">Solo cuentas @tecsup.edu.pe</p>
 
           {/* Server Action — no expone lógica al cliente */}
           <form

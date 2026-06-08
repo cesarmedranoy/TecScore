@@ -70,7 +70,11 @@ export const chatService = {
         type: "ADMIN_MESSAGE",
         title: `${sender.displayName} te envió un mensaje`,
         body: text.length > 80 ? text.slice(0, 80) + "…" : text,
-        metadata: { link: `/chats/${params.senderId}` },
+        metadata: {
+          groupId: channelId,            // para agrupar en NotificationBell
+          groupName: sender.displayName, // "6 mensajes nuevos en Arnold"
+          link: `/chats/${params.senderId}`,
+        },
       });
       notif.notifId = newId();
       await notificationRepository.create(notif);

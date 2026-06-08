@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Check, X, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PlayerAvatar } from "@/components/gamified/player-avatar";
@@ -30,12 +31,16 @@ interface FriendListItemProps {
 
 export function FriendListItem({ user, variant }: FriendListItemProps) {
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   function accept() {
     startTransition(async () => {
       const r = await acceptFriendRequestAction(user.userId);
       if (r.error) toast.error(r.error);
-      else toast.success(r.success ?? "¡Ahora son amigos!");
+      else {
+        toast.success(r.success ?? "¡Ahora son amigos!");
+        router.refresh();
+      }
     });
   }
 
@@ -43,7 +48,10 @@ export function FriendListItem({ user, variant }: FriendListItemProps) {
     startTransition(async () => {
       const r = await rejectOrCancelFriendAction(user.userId);
       if (r.error) toast.error(r.error);
-      else toast.success(r.success ?? "Descartado");
+      else {
+        toast.success(r.success ?? "Descartado");
+        router.refresh();
+      }
     });
   }
 
@@ -51,7 +59,10 @@ export function FriendListItem({ user, variant }: FriendListItemProps) {
     startTransition(async () => {
       const r = await removeFriendAction(user.userId);
       if (r.error) toast.error(r.error);
-      else toast.success(r.success ?? "Amistad eliminada");
+      else {
+        toast.success(r.success ?? "Amistad eliminada");
+        router.refresh();
+      }
     });
   }
 

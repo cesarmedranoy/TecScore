@@ -86,4 +86,30 @@ export const notificationService = {
     n.notifId = newId();
     await notificationRepository.create(n);
   },
+
+  /**
+   * "Nuevo mensaje en el chat" — para el receptor.
+   * Incluye groupId y groupName para que NotificationBell
+   * agrupe múltiples mensajes del mismo chat en una sola notif.
+   */
+  async newChatMessage(params: {
+    userId: string;
+    groupId: string;
+    groupName: string;
+    senderName: string;
+  }): Promise<void> {
+    const n = buildNotification({
+      userId: params.userId,
+      type: "ADMIN_MESSAGE",
+      title: `Nuevo mensaje en ${params.groupName}`,
+      body: `${params.senderName} envió un mensaje.`,
+      metadata: {
+        groupId: params.groupId,
+        groupName: params.groupName,
+        link: `/chats/${params.groupId}`,
+      },
+    });
+    n.notifId = newId();
+    await notificationRepository.create(n);
+  },
 };
