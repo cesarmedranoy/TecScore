@@ -10,7 +10,8 @@
  */
 
 import { redirect } from "next/navigation";
-import { CalendarOff } from "lucide-react";
+import Link from "next/link";
+import { CalendarOff, AlertTriangle } from "lucide-react";
 import { auth } from "@/auth";
 import {
   matchRepository,
@@ -70,6 +71,27 @@ export default async function MisApuestasPage() {
           Todos los partidos del Mundial y tu predicción de cada uno.
         </p>
       </div>
+
+      {!userInGroup && predictions.length > 0 && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-950/30 p-4 flex items-start gap-3">
+          <AlertTriangle className="size-5 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="font-medium text-sm text-amber-900 dark:text-amber-200">
+              Tus predicciones están pausadas
+            </p>
+            <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+              Saliste de tu único grupo. Tus predicciones no van a sumar
+              puntos hasta que te unas o crees uno nuevo.{" "}
+              <Link
+                href="/mis-grupos"
+                className="underline font-medium hover:text-amber-900 dark:hover:text-amber-100"
+              >
+                Ir a mis grupos →
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
 
       {live.length > 0 && (
         <Section title="En vivo" subtitle={`${live.length} partidos`}>

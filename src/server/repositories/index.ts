@@ -38,3 +38,7 @@ export {
   friendshipRepository,
   getRelation,
 } from "./friendship-repository";
+export {
+  chatMessageRepository,
+  makeDmChannelId,
+} from "./chat-message-repository";

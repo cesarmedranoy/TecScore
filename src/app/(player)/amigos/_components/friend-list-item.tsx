@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTransition } from "react";
 import { Check, X, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -94,14 +95,11 @@ export function FriendListItem({ user, variant }: FriendListItemProps) {
         )}
         {variant === "friend" && (
           <>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              title="Chat próximamente"
-            >
-              <MessageCircle />
-              Chat
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/chats/${user.userId}`}>
+                <MessageCircle />
+                Chat
+              </Link>
             </Button>
             <Button
               variant="outline"

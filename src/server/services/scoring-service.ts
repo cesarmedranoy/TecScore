@@ -28,6 +28,7 @@ import {
   predictionRepository,
   userRepository,
   pointsRepository,
+  groupMemberRepository,
   PointsAlreadyAwardedError,
 } from "@/server/repositories";
 import { notificationService } from "@/server/services/notification-service";
@@ -92,6 +93,21 @@ export const scoringService = {
 
     for (const prediction of predictions) {
       try {
+        // Regla de negocio: si el usuario no está en ningún grupo al
+        // momento del scoring, su predicción NO cuenta. Esto implementa
+        // la invalidación "salí del último grupo → mis predicciones
+        // dejan de valer hasta que vuelva a entrar a uno".
+        const groupCount = await groupMemberRepository.countByUser(
+          prediction.userId,
+        );
+        if (groupCount === 0) {
+          summary.errors.push({
+            userId: prediction.userId,
+            error: "Predicción invalidada (usuario sin grupo)",
+          });
+          continue;
+        }
+
         const baseOutcome = evaluatePrediction(prediction, match);
 
         // Leer estado de racha actual del usuario

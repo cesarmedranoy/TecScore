@@ -52,17 +52,26 @@ interface ApiResponse {
   recentPredictions: RecentPrediction[];
 }
 
+/**
+ * Cache de previews. CRÍTICO: si falla, eliminamos la entry para que
+ * el próximo hover reintente. Sin esto, una falla transitoria se
+ * pegaba para toda la sesión.
+ */
 const cache = new Map<string, Promise<ApiResponse>>();
 
 function fetchPreview(userId: string): Promise<ApiResponse> {
   if (!cache.has(userId)) {
-    cache.set(
-      userId,
-      fetch(`/api/users/${userId}/preview`).then((r) => {
-        if (!r.ok) throw new Error("Error al cargar perfil");
-        return r.json() as Promise<ApiResponse>;
-      }),
-    );
+    const promise = fetch(`/api/users/${userId}/preview`, {
+      cache: "no-store",
+    }).then(async (r) => {
+      if (!r.ok) {
+        throw new Error(`HTTP ${r.status}`);
+      }
+      return r.json() as Promise<ApiResponse>;
+    });
+    cache.set(userId, promise);
+    // Si falla, no la dejamos en caché — el próximo hover reintenta.
+    promise.catch(() => cache.delete(userId));
   }
   return cache.get(userId)!;
 }
