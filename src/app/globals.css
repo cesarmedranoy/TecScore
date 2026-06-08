@@ -98,6 +98,58 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ==========================================================================
+   Animaciones reutilizables — entrance + stagger
+   ========================================================================== */
+
+@keyframes tec-fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tec-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tec-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tec-shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+/* Clase: fade-in-up con stagger via --tec-delay */
+.tec-fade-in-up {
+  animation: tec-fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--tec-delay, 0ms);
+}
+
+.tec-fade-in {
+  animation: tec-fade-in 0.4s ease-out both;
+  animation-delay: var(--tec-delay, 0ms);
+}
+
+.tec-scale-in {
+  animation: tec-scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--tec-delay, 0ms);
+}
+
 /* Scrollbar custom para que se sienta gamificado */
 ::-webkit-scrollbar {
   width: 10px;

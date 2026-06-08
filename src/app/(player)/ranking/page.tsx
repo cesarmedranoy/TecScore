@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlayerAvatar } from "@/components/gamified/player-avatar";
 import { PointsBadge } from "@/components/gamified/points-badge";
 import { StreakBadge } from "@/components/gamified/streak-badge";
+import { ProfileHoverCard } from "@/components/gamified/profile-hover-card";
 import { cn } from "@/lib/utils";
 import type { AvatarPreset, User } from "@/types";
 
@@ -98,44 +99,45 @@ export default async function RankingGlobalPage() {
                       ? "text-orange-600"
                       : "text-muted-foreground";
               return (
-                <div
-                  key={u.userId}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md",
-                    isMe && "bg-primary/5 border border-primary/20",
-                  )}
-                >
-                  <span
+                <ProfileHoverCard key={u.userId} userId={u.userId}>
+                  <div
                     className={cn(
-                      "text-sm font-bold tabular-nums w-8 text-center",
-                      medal,
+                      "flex items-center gap-3 px-3 py-2 rounded-md hover:bg-muted/40 transition-colors",
+                      isMe && "bg-primary/5 border border-primary/20",
                     )}
                   >
-                    #{position}
-                  </span>
-                  <PlayerAvatar
-                    name={u.displayName}
-                    avatarUrl={u.avatarUrl}
-                    customAvatarDataUrl={u.customAvatarDataUrl}
-                    preset={preset}
-                    size="sm"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-0">
-                      <span className="font-medium truncate">
-                        {u.displayName}
-                      </span>
-                      <span className="text-muted-foreground">#{u.tag}</span>
-                      {isMe && (
-                        <Badge variant="default" className="ml-2">
-                          Tú
-                        </Badge>
+                    <span
+                      className={cn(
+                        "text-sm font-bold tabular-nums w-8 text-center",
+                        medal,
                       )}
+                    >
+                      #{position}
+                    </span>
+                    <PlayerAvatar
+                      name={u.displayName}
+                      avatarUrl={u.avatarUrl}
+                      customAvatarDataUrl={u.customAvatarDataUrl}
+                      preset={preset}
+                      size="sm"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-0">
+                        <span className="font-medium truncate">
+                          {u.displayName}
+                        </span>
+                        <span className="text-muted-foreground">#{u.tag}</span>
+                        {isMe && (
+                          <Badge variant="default" className="ml-2">
+                            Tú
+                          </Badge>
+                        )}
+                      </div>
                     </div>
+                    <StreakBadge streak={u.currentStreak} size="sm" />
+                    <PointsBadge points={u.totalPoints} size="sm" />
                   </div>
-                  <StreakBadge streak={u.currentStreak} size="sm" />
-                  <PointsBadge points={u.totalPoints} size="sm" />
-                </div>
+                </ProfileHoverCard>
               );
             })}
           </CardContent>

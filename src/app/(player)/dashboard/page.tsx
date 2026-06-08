@@ -86,7 +86,10 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Hero compacto */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white">
+      <section
+        className="tec-fade-in-up relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 p-6 text-white"
+        style={{ ["--tec-delay" as never]: "0ms" }}
+      >
         <div className="absolute -right-12 -top-12 size-40 rounded-full bg-amber-400/20 blur-3xl" />
         <div className="absolute -left-12 -bottom-12 size-40 rounded-full bg-emerald-300/20 blur-3xl" />
         <div className="relative flex items-start justify-between gap-4 flex-wrap">
@@ -115,7 +118,10 @@ export default async function DashboardPage() {
       </section>
 
       {/* Stats rápidos */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <section
+        className="tec-fade-in-up grid grid-cols-2 lg:grid-cols-4 gap-3"
+        style={{ ["--tec-delay" as never]: "80ms" }}
+      >
         <StatCard
           icon={Trophy}
           label="Puntos"
@@ -145,7 +151,10 @@ export default async function DashboardPage() {
 
       {/* Próximos partidos */}
       {upcoming.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section
+          className="tec-fade-in-up flex flex-col gap-3"
+          style={{ ["--tec-delay" as never]: "160ms" }}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Calendar className="size-5 text-primary" />
@@ -173,7 +182,10 @@ export default async function DashboardPage() {
 
       {/* Mis grupos preview */}
       {validGroups.length > 0 && (
-        <section className="flex flex-col gap-3">
+        <section
+          className="tec-fade-in-up flex flex-col gap-3"
+          style={{ ["--tec-delay" as never]: "240ms" }}
+        >
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
               <Users className="size-5 text-primary" />
@@ -214,7 +226,10 @@ export default async function DashboardPage() {
       )}
 
       {/* Reglas de puntuación */}
-      <section className="flex flex-col gap-3">
+      <section
+        className="tec-fade-in-up flex flex-col gap-3"
+        style={{ ["--tec-delay" as never]: "320ms" }}
+      >
         <div>
           <h2 className="text-xl font-bold tracking-tight">
             Cómo ganas puntos
@@ -273,7 +288,10 @@ export default async function DashboardPage() {
       </section>
 
       {/* Reglas del jugador */}
-      <section className="flex flex-col gap-3">
+      <section
+        className="tec-fade-in-up flex flex-col gap-3"
+        style={{ ["--tec-delay" as never]: "400ms" }}
+      >
         <h2 className="text-xl font-bold tracking-tight">
           Reglas del jugador
         </h2>

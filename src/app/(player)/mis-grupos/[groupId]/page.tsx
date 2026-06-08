@@ -31,6 +31,7 @@ import { Button } from "@/components/ui/button";
 import { PlayerAvatar } from "@/components/gamified/player-avatar";
 import { PointsBadge } from "@/components/gamified/points-badge";
 import { StreakBadge } from "@/components/gamified/streak-badge";
+import { ProfileHoverCard } from "@/components/gamified/profile-hover-card";
 import { GroupActions } from "./_components/group-actions";
 import { PendingRequests } from "./_components/pending-requests";
 import { WelcomeToast } from "./_components/welcome-toast";
@@ -206,36 +207,37 @@ export default async function GroupDetailPage({ params }: PageProps) {
                 const preset =
                   (user.avatarPreset as AvatarPreset | undefined) ?? "google";
                 return (
-                  <div
-                    key={user.userId}
-                    className={cn(
-                      "flex items-center gap-4 px-3 py-2 rounded-md",
-                      isMe && "bg-primary/5 border border-primary/20",
-                    )}
-                  >
-                    <span className="text-sm font-bold text-muted-foreground tabular-nums w-6">
-                      #{position}
-                    </span>
-                    <PlayerAvatar
-                      name={user.displayName}
-                      avatarUrl={user.avatarUrl}
-                      customAvatarDataUrl={user.customAvatarDataUrl}
-                      preset={preset}
-                      size="sm"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-0">
-                        <span className="font-medium truncate">
-                          {user.displayName}
-                        </span>
-                        <span className="text-muted-foreground">
-                          #{user.tag}
-                        </span>
+                  <ProfileHoverCard key={user.userId} userId={user.userId}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-4 px-3 py-2 rounded-md hover:bg-muted/40 transition-colors",
+                        isMe && "bg-primary/5 border border-primary/20",
+                      )}
+                    >
+                      <span className="text-sm font-bold text-muted-foreground tabular-nums w-6">
+                        #{position}
+                      </span>
+                      <PlayerAvatar
+                        name={user.displayName}
+                        avatarUrl={user.avatarUrl}
+                        customAvatarDataUrl={user.customAvatarDataUrl}
+                        preset={preset}
+                        size="sm"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-0">
+                          <span className="font-medium truncate">
+                            {user.displayName}
+                          </span>
+                          <span className="text-muted-foreground">
+                            #{user.tag}
+                          </span>
+                        </div>
                       </div>
+                      <StreakBadge streak={user.currentStreak} size="sm" />
+                      <PointsBadge points={user.totalPoints} size="sm" />
                     </div>
-                    <StreakBadge streak={user.currentStreak} size="sm" />
-                    <PointsBadge points={user.totalPoints} size="sm" />
-                  </div>
+                  </ProfileHoverCard>
                 );
               })}
             </CardContent>
