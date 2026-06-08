@@ -16,6 +16,7 @@ import {
   User,
   ScrollText,
   Trophy,
+  Star,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ const NAV: NavItem[] = [
   { href: "/admin/usuarios", label: "Usuarios", icon: User },
   { href: "/admin/eliminatorias", label: "Eliminatorias", icon: Trophy },
   { href: "/admin/auditoria", label: "Auditoría", icon: ScrollText },
+  { href: "/admin/eventos", label: "Eventos especiales", icon: Star },
 ];
 
 interface AdminSidebarProps {

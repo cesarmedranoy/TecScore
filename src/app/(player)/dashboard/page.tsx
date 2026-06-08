@@ -4,12 +4,11 @@
  * Layout denso:
  *  1. Hero compacto (saludo + CTA si no tiene grupos)
  *  2. Stats rápidos (4 cards)
- *  3. Próximos partidos a predecir (3 partidos)
- *  4. Mis grupos preview (3 cards)
- *  5. Reglas de puntuación (5 cards)
- *  6. Reglas del jugador
- *
- * El usuario pidió expresamente menos espacio vacío y más contenido útil.
+ *  3. Evento especial (campeón del Mundial) — solo si hay uno activo
+ *  4. Próximos partidos a predecir (3 partidos)
+ *  5. Mis grupos preview (3 cards)
+ *  6. Reglas de puntuación (5 cards)
+ *  7. Reglas del jugador
  */
 
 import { redirect } from "next/navigation";
@@ -47,16 +46,19 @@ import { Button } from "@/components/ui/button";
 import { MatchCard } from "../mis-apuestas/_components/match-card";
 import { acceptsPredictions } from "@/lib/scoring/match-state";
 import { cn } from "@/lib/utils";
+import { ChampionPicker } from "@/components/gamified/championPicker";
+import { specialEventService } from "@/server/services/special-event-service";
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [user, memberships, predictions, allMatches] = await Promise.all([
+  const [user, memberships, predictions, allMatches, activeEvent] = await Promise.all([
     userRepository.getById(session.user.userId),
     groupMemberRepository.listByUser(session.user.userId),
     predictionRepository.listByUser(session.user.userId),
     matchRepository.listAll(),
+    specialEventService.getActiveChampionEvent(),
   ]);
 
   const name = user?.displayName ?? "Jugador";
@@ -148,6 +150,23 @@ export default async function DashboardPage() {
           accent="zinc"
         />
       </section>
+
+      {/* Evento especial — campeón del Mundial */}
+      {activeEvent && (
+        <section
+          className="tec-fade-in-up"
+          style={{ ["--tec-delay" as never]: "120ms" }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="size-5 text-amber-500" />
+            <h2 className="text-xl font-bold tracking-tight">Evento especial</h2>
+          </div>
+          <ChampionPicker
+            event={activeEvent}
+            currentPick={user?.predictedChampionId ?? null}
+          />
+        </section>
+      )}
 
       {/* Próximos partidos */}
       {upcoming.length > 0 && (

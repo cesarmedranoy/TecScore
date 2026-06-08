@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   const [user, activeEvent] = await Promise.all([
-    userRepository.getById(session.user.id!),
+    userRepository.getById(session.user.userId!),
     specialEventService.getActiveChampionEvent(),
   ]);
 
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    await specialEventService.submitChampionPick(parsed.data, session.user.id!);
+    await specialEventService.submitChampionPick(parsed.data, session.user.userId!);
     return NextResponse.json({ ok: true, champion: parsed.data.answer });
   } catch (err) {
     if (err instanceof EventNotFoundError) {
