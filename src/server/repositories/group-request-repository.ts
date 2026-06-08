@@ -14,6 +14,7 @@ import {
   GetCommand,
   PutCommand,
   QueryCommand,
+  ScanCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { ddb } from "@/lib/aws/client";
@@ -73,6 +74,24 @@ export const groupRequestRepository = {
         ExpressionAttributeValues: { ":status": status, ":t": now() },
       }),
     );
+  },
+
+  /**
+   * Lista todas las solicitudes pendientes de un usuario (en cualquier grupo).
+   * Útil para validar que no envíe múltiples solicitudes simultáneas.
+   */
+  async listPendingByUser(userId: string): Promise<GroupRequest[]> {
+    const res = await ddb.send(
+      new ScanCommand({
+        TableName: TABLES.GROUP_REQUESTS,
+        FilterExpression: "userId = :u AND #s = :pending",
+        ExpressionAttributeNames: { "#s": "status" },
+        ExpressionAttributeValues: { ":u": userId, ":pending": "PENDING" },
+      }),
+    );
+    const items = (res.Items as GroupRequest[]) ?? [];
+    const nowDate = new Date();
+    return items.filter((r) => !isRequestExpired(r, nowDate));
   },
 
   /**

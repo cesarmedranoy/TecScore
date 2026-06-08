@@ -30,6 +30,7 @@ import {
   pointsRepository,
   PointsAlreadyAwardedError,
 } from "@/server/repositories";
+import { notificationService } from "@/server/services/notification-service";
 import {
   evaluatePrediction,
   nextStreakState,
@@ -133,6 +134,19 @@ export const scoringService = {
         summary.predictionsScored += 1;
         summary.totalPointsAwarded += finalOutcome.points;
         if (streakUpdate.bonusFired) summary.bonusesFired += 1;
+
+        // Notificar al usuario que ganó puntos
+        try {
+          await notificationService.matchScored({
+            userId: prediction.userId,
+            matchId: match.matchId,
+            homeTeam: match.homeTeam,
+            awayTeam: match.awayTeam,
+            points: finalOutcome.points,
+          });
+        } catch (err) {
+          console.warn("[scoring] no se pudo notificar al usuario:", err);
+        }
       } catch (err) {
         if (err instanceof PointsAlreadyAwardedError) {
           // Reintento idempotente — los puntos ya estaban dados, OK.

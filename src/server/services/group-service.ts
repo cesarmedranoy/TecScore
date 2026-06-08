@@ -18,10 +18,12 @@ import {
   groupRepository,
   groupMemberRepository,
   groupRequestRepository,
+  userRepository,
   AlreadyMemberError,
   REQUEST_TTL_HOURS,
   isRequestExpired,
 } from "@/server/repositories";
+import { notificationService } from "@/server/services/notification-service";
 import { generateJoinCode } from "@/lib/groups/join-code";
 import { newId, now } from "@/lib/utils";
 import type { Group, GroupMember, GroupRequest, GroupVisibility } from "@/types";
@@ -78,6 +80,15 @@ export class NoPendingRequestError extends Error {
   constructor(userId: string) {
     super(`No hay solicitud pendiente para usuario ${userId}`);
     this.name = "NoPendingRequestError";
+  }
+}
+
+export class HasPendingRequestError extends Error {
+  constructor() {
+    super(
+      "Ya tienes una solicitud pendiente. Espera la respuesta o cancélala antes de enviar otra.",
+    );
+    this.name = "HasPendingRequestError";
   }
 }
 
@@ -204,7 +215,14 @@ export const groupService = {
       return { status: "JOINED", group: { ...group, memberCount: group.memberCount + 1 } };
     }
 
-    // PRIVATE → crear solicitud
+    // PRIVATE → crear solicitud + notif al owner
+    // Guard: si ya tiene UNA solicitud pendiente (en este o en otro grupo),
+    // no permitimos enviar otra. Mantiene el flow ordenado.
+    const pending = await groupRequestRepository.listPendingByUser(params.userId);
+    if (pending.length > 0) {
+      throw new HasPendingRequestError();
+    }
+
     const requestedAt = now();
     const expiresAt = new Date(
       Date.now() + REQUEST_TTL_HOURS * 60 * 60 * 1000,
@@ -217,7 +235,34 @@ export const groupService = {
       status: "PENDING",
     };
     await groupRequestRepository.create(request);
+
+    // Notificar al owner del grupo (no bloqueante — si falla, no rompe el flujo)
+    try {
+      const requester = await userRepository.getById(params.userId);
+      if (requester) {
+        await notificationService.newGroupRequest({
+          ownerId: group.ownerId,
+          groupId: group.groupId,
+          groupName: group.name,
+          requesterName: requester.displayName,
+          requesterTag: requester.tag,
+        });
+      }
+    } catch (err) {
+      console.warn("[group-service] no se pudo notificar al owner:", err);
+    }
+
     return { status: "REQUESTED", group, request };
+  },
+
+  /** Cancela una solicitud pendiente que envió el propio usuario. */
+  async cancelMyRequest(params: {
+    userId: string;
+    groupId: string;
+  }): Promise<void> {
+    const req = await groupRequestRepository.get(params.groupId, params.userId);
+    if (!req || req.status !== "PENDING") return; // idempotente
+    await groupRequestRepository.delete(params.groupId, params.userId);
   },
 
   /**
@@ -274,6 +319,17 @@ export const groupService = {
       params.targetUserId,
       "APPROVED",
     );
+
+    // Notificar al solicitante
+    try {
+      await notificationService.groupRequestApproved({
+        userId: params.targetUserId,
+        groupId: params.groupId,
+        groupName: group.name,
+      });
+    } catch (err) {
+      console.warn("[group-service] no se pudo notificar approve:", err);
+    }
   },
 
   async rejectRequest(params: {
@@ -291,6 +347,16 @@ export const groupService = {
       params.targetUserId,
       "REJECTED",
     );
+
+    // Notificar al solicitante
+    try {
+      await notificationService.groupRequestRejected({
+        userId: params.targetUserId,
+        groupName: group.name,
+      });
+    } catch (err) {
+      console.warn("[group-service] no se pudo notificar reject:", err);
+    }
   },
 
   /**

@@ -28,6 +28,8 @@ interface MatchCardProps {
   match: Match;
   prediction?: Prediction;
   pointsEarned?: number;
+  /** Si false, "Predecir" se ve deshabilitado con tooltip "Únete a un grupo". */
+  userInGroup?: boolean;
 }
 
 const STATUS_LABEL = {
@@ -48,7 +50,12 @@ const STATUS_VARIANT = {
   RESCHEDULED: "outline",
 } as const;
 
-export function MatchCard({ match, prediction, pointsEarned }: MatchCardProps) {
+export function MatchCard({
+  match,
+  prediction,
+  pointsEarned,
+  userInGroup = true,
+}: MatchCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const canPredict = acceptsPredictions(match);
   const isFinished = match.status === "FINISHED";
@@ -158,10 +165,22 @@ export function MatchCard({ match, prediction, pointsEarned }: MatchCardProps) {
               )}
 
               {canPredict ? (
-                <Button size="sm" onClick={() => setDialogOpen(true)}>
-                  {prediction ? <Pencil /> : <TrendingUp />}
-                  {prediction ? "Editar" : "Predecir"}
-                </Button>
+                userInGroup ? (
+                  <Button size="sm" onClick={() => setDialogOpen(true)}>
+                    {prediction ? <Pencil /> : <TrendingUp />}
+                    {prediction ? "Editar" : "Predecir"}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled
+                    title="Únete a un grupo primero para empezar a predecir"
+                  >
+                    <Lock className="size-3" />
+                    Únete a un grupo
+                  </Button>
+                )
               ) : !isFinished ? (
                 <Badge variant="muted">
                   <Lock className="size-3" />

@@ -10,6 +10,7 @@ import {
   predictionService,
   MatchClosedForPredictionsError,
   MatchNotFoundError,
+  MustBeInGroupError,
 } from "@/server/services/prediction-service";
 
 export interface PredictionActionState {
@@ -50,6 +51,9 @@ export async function submitPredictionAction(
     }
     if (err instanceof MatchClosedForPredictionsError) {
       return { error: "Ya no se aceptan predicciones para este partido" };
+    }
+    if (err instanceof MustBeInGroupError) {
+      return { error: "Únete a un grupo primero para empezar a predecir" };
     }
     throw err;
   }

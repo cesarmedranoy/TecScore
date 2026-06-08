@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { PlayerPill } from "@/components/gamified/player-pill";
 import { ThemeToggle } from "./theme-toggle";
 import { MusicToggle } from "./music-toggle";
+import { NotificationBell } from "./notification-bell";
 import type { AvatarPreset } from "@/types";
 
 interface PlayerHeaderProps {
@@ -42,6 +43,7 @@ export function PlayerHeader({
       />
       <div className="flex items-center gap-1">
         {actions}
+        <NotificationBell />
         <MusicToggle />
         <ThemeToggle />
       </div>

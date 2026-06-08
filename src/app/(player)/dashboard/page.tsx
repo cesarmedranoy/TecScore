@@ -164,6 +164,7 @@ export default async function DashboardPage() {
                 key={m.matchId}
                 match={m}
                 prediction={predictionsByMatch.get(m.matchId)}
+                userInGroup={groupCount > 0}
               />
             ))}
           </div>

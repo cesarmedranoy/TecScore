@@ -18,6 +18,7 @@ import {
   GroupNotFoundError,
   OwnerCannotLeaveError,
   NotGroupOwnerError,
+  HasPendingRequestError,
 } from "@/server/services/group-service";
 import { AlreadyMemberError } from "@/server/repositories";
 import { createGroupSchema, joinGroupSchema } from "@/server/schemas/group";
@@ -104,8 +105,25 @@ export async function joinGroupAction(
     if (err instanceof GroupFullError) {
       return { error: "El grupo está lleno" };
     }
+    if (err instanceof HasPendingRequestError) {
+      return { error: err.message };
+    }
     throw err;
   }
+}
+
+/** Cancela una solicitud pendiente del propio usuario. */
+export async function cancelMyRequestAction(
+  groupId: string,
+): Promise<ActionState> {
+  const session = await auth();
+  if (!session?.user) return { error: "No autorizado" };
+  await groupService.cancelMyRequest({
+    userId: session.user.userId,
+    groupId,
+  });
+  revalidatePath("/mis-grupos");
+  return { success: "Solicitud cancelada" };
 }
 
 export async function leaveGroupAction(groupId: string): Promise<ActionState> {

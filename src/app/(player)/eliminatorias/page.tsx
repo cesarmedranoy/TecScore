@@ -11,6 +11,7 @@ import { auth } from "@/auth";
 import {
   matchRepository,
   predictionRepository,
+  groupMemberRepository,
 } from "@/server/repositories";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,10 +48,12 @@ export default async function EliminatoriasPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [allMatches, predictions] = await Promise.all([
+  const [allMatches, predictions, groupCount] = await Promise.all([
     matchRepository.listAll(),
     predictionRepository.listByUser(session.user.userId),
+    groupMemberRepository.countByUser(session.user.userId),
   ]);
+  const userInGroup = groupCount > 0;
 
   const predByMatch = new Map<string, Prediction>(
     predictions.map((p) => [p.matchId, p]),
@@ -101,6 +104,7 @@ export default async function EliminatoriasPage() {
           stage={stage}
           matches={byStage[stage]}
           predictions={predByMatch}
+          userInGroup={userInGroup}
         />
       ))}
     </div>
@@ -115,10 +119,12 @@ function StageSection({
   stage,
   matches,
   predictions,
+  userInGroup,
 }: {
   stage: Stage;
   matches: Match[];
   predictions: Map<string, Prediction>;
+  userInGroup: boolean;
 }) {
   const expected = STAGE_EXPECTED_COUNT[stage];
   const missing = Math.max(0, expected - matches.length);
@@ -150,6 +156,7 @@ function StageSection({
             key={m.matchId}
             match={m}
             prediction={predictions.get(m.matchId)}
+            userInGroup={userInGroup}
           />
         ))}
         {Array.from({ length: missing }).map((_, idx) => (

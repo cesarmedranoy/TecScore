@@ -8,6 +8,10 @@ import { redirect } from "next/navigation";
 import { Users } from "lucide-react";
 import { auth } from "@/auth";
 import { groupService } from "@/server/services/group-service";
+import {
+  groupRepository,
+  groupRequestRepository,
+} from "@/server/repositories";
 import { Card, CardContent } from "@/components/ui/card";
 import { CreateGroupDialog } from "./_components/create-group-dialog";
 import { JoinGroupDialog } from "./_components/join-group-dialog";
@@ -20,6 +24,29 @@ export default async function MisGruposPage() {
 
   const groups = await groupService.listMyGroups(session.user.userId);
 
+  // Detectar si tiene una solicitud pendiente para bloquear nuevos envíos
+  const pendingList = await groupRequestRepository.listPendingByUser(
+    session.user.userId,
+  );
+  let pendingRequestInfo:
+    | { groupId: string; groupName: string; hoursLeft: number }
+    | undefined;
+  if (pendingList.length > 0) {
+    const p = pendingList[0]!;
+    const group = await groupRepository.getById(p.groupId);
+    const hoursLeft = Math.max(
+      0,
+      Math.round(
+        (new Date(p.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60),
+      ),
+    );
+    pendingRequestInfo = {
+      groupId: p.groupId,
+      groupName: group?.name ?? "un grupo",
+      hoursLeft,
+    };
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -31,13 +58,13 @@ export default async function MisGruposPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <JoinGroupDialog />
+          <JoinGroupDialog pendingRequest={pendingRequestInfo} />
           <CreateGroupDialog />
         </div>
       </div>
 
       {groups.length === 0 ? (
-        <EmptyState />
+        <EmptyState pendingRequest={pendingRequestInfo} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groups.map((g) => (
@@ -53,7 +80,11 @@ export default async function MisGruposPage() {
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  pendingRequest,
+}: {
+  pendingRequest?: { groupId: string; groupName: string; hoursLeft: number };
+}) {
   return (
     <Card>
       <CardContent className="pt-16 pb-16 flex flex-col items-center text-center gap-4">
@@ -67,7 +98,7 @@ function EmptyState() {
           </p>
         </div>
         <div className="flex items-center gap-2 mt-2">
-          <JoinGroupDialog />
+          <JoinGroupDialog pendingRequest={pendingRequest} />
           <CreateGroupDialog />
         </div>
       </CardContent>

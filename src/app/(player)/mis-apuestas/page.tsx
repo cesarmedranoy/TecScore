@@ -16,6 +16,7 @@ import {
   matchRepository,
   predictionRepository,
   pointsRepository,
+  groupMemberRepository,
 } from "@/server/repositories";
 import { Card, CardContent } from "@/components/ui/card";
 import { MatchCard } from "./_components/match-card";
@@ -25,11 +26,13 @@ export default async function MisApuestasPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [matches, predictions, points] = await Promise.all([
+  const [matches, predictions, points, groupCount] = await Promise.all([
     matchRepository.listAll(),
     predictionRepository.listByUser(session.user.userId),
     pointsRepository.listByUser(session.user.userId),
+    groupMemberRepository.countByUser(session.user.userId),
   ]);
+  const userInGroup = groupCount > 0;
 
   if (matches.length === 0) {
     return <EmptyState />;
@@ -75,6 +78,7 @@ export default async function MisApuestasPage() {
               key={m.matchId}
               match={m}
               prediction={predByMatch.get(m.matchId)}
+              userInGroup={userInGroup}
             />
           ))}
         </Section>
@@ -90,6 +94,7 @@ export default async function MisApuestasPage() {
               key={m.matchId}
               match={m}
               prediction={predByMatch.get(m.matchId)}
+              userInGroup={userInGroup}
             />
           ))}
         </Section>
@@ -105,6 +110,7 @@ export default async function MisApuestasPage() {
                 match={m}
                 prediction={predByMatch.get(m.matchId)}
                 pointsEarned={pe?.amount}
+                userInGroup={userInGroup}
               />
             );
           })}
@@ -118,6 +124,7 @@ export default async function MisApuestasPage() {
               key={m.matchId}
               match={m}
               prediction={predByMatch.get(m.matchId)}
+              userInGroup={userInGroup}
             />
           ))}
         </Section>

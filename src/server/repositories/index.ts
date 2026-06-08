@@ -30,3 +30,7 @@ export {
   isRequestExpired,
   REQUEST_TTL_HOURS,
 } from "./group-request-repository";
+export {
+  notificationRepository,
+  buildNotification,
+} from "./notification-repository";

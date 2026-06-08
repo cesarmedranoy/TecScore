@@ -10,6 +10,7 @@
 import {
   matchRepository,
   predictionRepository,
+  groupMemberRepository,
 } from "@/server/repositories";
 import {
   acceptsPredictions,
@@ -34,6 +35,13 @@ export class MatchNotFoundError extends Error {
   }
 }
 
+export class MustBeInGroupError extends Error {
+  constructor() {
+    super("Debes ser miembro de al menos 1 grupo para poder predecir");
+    this.name = "MustBeInGroupError";
+  }
+}
+
 export const predictionService = {
   async submit(params: {
     userId: string;
@@ -41,6 +49,13 @@ export const predictionService = {
     homeScore: number;
     awayScore: number;
   }): Promise<Prediction> {
+    // Regla de negocio crítica: sin grupo no se puede predecir.
+    // No importa de qué grupo seas — basta con que estés en ≥1.
+    const groupCount = await groupMemberRepository.countByUser(params.userId);
+    if (groupCount === 0) {
+      throw new MustBeInGroupError();
+    }
+
     const match = await matchRepository.getById(params.matchId);
     if (!match) throw new MatchNotFoundError(params.matchId);
 
