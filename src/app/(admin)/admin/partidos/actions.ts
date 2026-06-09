@@ -1,5 +1,7 @@
 /**
- * Server actions del admin de partidos.
+ * Server actions del admin de partidos — con auditoría.
+ *
+ * Guarda en: src/app/(admin)/admin/partidos/actions.ts
  */
 
 "use server";
@@ -9,6 +11,7 @@ import { auth } from "@/auth";
 import { createMatchSchema } from "@/server/schemas/admin-match";
 import { matchResultSchema } from "@/server/schemas/match-result";
 import { matchRepository } from "@/server/repositories";
+import { auditLogRepository } from "@/server/repositories/audit-log-repository";
 import { assertTransition, InvalidMatchTransitionError } from "@/lib/scoring/match-state";
 import {
   scoringService,
@@ -55,6 +58,21 @@ export async function createMatchAction(
     updatedAt: now(),
   };
   await matchRepository.create(match);
+
+  // ── Auditoría ──────────────────────────────────────────────────────────────
+  await auditLogRepository.create({
+    actorId: session.user.userId,
+    action: "MATCH_CREATE",
+    targetType: "MATCH",
+    targetId: match.matchId,
+    diff: {
+      homeTeam: { from: null, to: match.homeTeam },
+      awayTeam: { from: null, to: match.awayTeam },
+      stage:    { from: null, to: match.stage },
+      kickoffAt: { from: null, to: match.kickoffAt },
+    },
+  }).catch(() => {}); // silent — la auditoría no debe romper el flujo
+
   revalidatePath("/admin/partidos");
   revalidatePath("/admin");
   return { success: `Partido ${match.homeTeam} vs ${match.awayTeam} creado` };
@@ -74,9 +92,7 @@ export async function setMatchResultAction(
   const awayScore = Number(formData.get("awayScore"));
 
   const parsed = matchResultSchema.safeParse({ homeScore, awayScore });
-  if (!parsed.success) {
-    return { error: "Marcador inválido" };
-  }
+  if (!parsed.success) return { error: "Marcador inválido" };
   if (!matchId) return { error: "matchId requerido" };
 
   const match = await matchRepository.getById(matchId);
@@ -92,6 +108,19 @@ export async function setMatchResultAction(
   }
 
   await matchRepository.setResult(matchId, parsed.data.homeScore, parsed.data.awayScore);
+
+  // ── Auditoría ──────────────────────────────────────────────────────────────
+  await auditLogRepository.create({
+    actorId: session.user.userId,
+    action: "MATCH_RESULT_UPDATE",
+    targetType: "MATCH",
+    targetId: matchId,
+    diff: {
+      homeScore: { from: match.homeScore ?? null, to: parsed.data.homeScore },
+      awayScore: { from: match.awayScore ?? null, to: parsed.data.awayScore },
+      status:    { from: match.status, to: "FINISHED" },
+    },
+  }).catch(() => {});
 
   try {
     const summary = await scoringService.scoreMatch(matchId);
@@ -118,17 +147,29 @@ export async function updateMatchStatusAction(
   }
   const match = await matchRepository.getById(matchId);
   if (!match) return { error: "El partido no existe" };
+
   try {
     assertTransition(match.status, newStatus);
   } catch (err) {
     if (err instanceof InvalidMatchTransitionError) {
-      return {
-        error: `Transición inválida ${match.status} → ${newStatus}`,
-      };
+      return { error: `Transición inválida ${match.status} → ${newStatus}` };
     }
     throw err;
   }
+
   await matchRepository.updateStatus(matchId, newStatus);
+
+  // ── Auditoría ──────────────────────────────────────────────────────────────
+  await auditLogRepository.create({
+    actorId: session.user.userId,
+    action: "MATCH_STATUS_UPDATE",
+    targetType: "MATCH",
+    targetId: matchId,
+    diff: {
+      status: { from: match.status, to: newStatus },
+    },
+  }).catch(() => {});
+
   revalidatePath("/admin/partidos");
   return { success: `Estado actualizado a ${newStatus}` };
 }

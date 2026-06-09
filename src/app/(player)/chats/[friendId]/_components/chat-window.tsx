@@ -139,7 +139,7 @@ export function ChatWindow({
                 >
                   {m.text}
                 </div>
-                <span className="text-[10px] text-muted-foreground px-2">
+                <span className="text-[10px] text-muted-foreground px-2" suppressHydrationWarning>
                   {formatTime(m.createdAt)}
                 </span>
               </div>
