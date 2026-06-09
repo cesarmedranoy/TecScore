@@ -42,7 +42,8 @@ export async function GET(req: NextRequest) {
   const all = (res.Items as User[]) ?? [];
 
   const matches = all
-    .filter((u) => u.userId !== session.user.userId) // excluirme
+    .filter((u) => u.userId !== session.user.userId) 
+    .filter((u) => u.role === "PLAYER") 
     .filter((u) => {
       const name = normalize(u.displayName);
       const tag = normalize(u.tag);

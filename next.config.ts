@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Oculta el badge "N" de dev en la esquina inferior izquierda.
+    output: "standalone",  
   devIndicators: false,
 
   images: {

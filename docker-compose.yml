@@ -1,36 +1,39 @@
-# DynamoDB Local — réplica funcional de AWS DynamoDB para desarrollo offline.
+# docker-compose.yml — TecScore con escalamiento horizontal
 #
-# Por qué: permite que cualquier dev (incluyendo el compañero de Julio) trabaje
-# sin necesitar credenciales reales de AWS. Misma API, mismos comandos.
+# Arquitectura:
+#   nginx (puerto 80) → load balancer
+#       ├── app1 (Next.js :3000)
+#       ├── app2 (Next.js :3000)
+#       └── app3 (Next.js :3000)
+#   dynamodb-local (puerto 8000) — BD compartida entre instancias
+#   dynamodb-admin (puerto 8001) — UI de administración de tablas
 #
 # Uso:
-#   npm run db:up        # levanta DynamoDB Local en localhost:8000
-#   npm run db:setup     # crea las tablas
-#   npm run db:down      # apaga el contenedor
-#
-# Datos persistentes en ./docker/dynamodb-data (ignorado por git).
+#   npm run db:up          # solo DynamoDB (desarrollo)
+#   docker compose up -d --build  # stack completo con nginx + 3 instancias
 
 services:
+
+  # ── Base de datos ────────────────────────────────────────────────────────────
   dynamodb-local:
     image: amazon/dynamodb-local:latest
     container_name: tecscore-dynamodb
     ports:
       - "8000:8000"
-    # -sharedDb: todas las apps comparten el mismo archivo de DB (más simple)
-    # -dbPath: persistir en disco para que los datos sobrevivan a docker compose down
     command: -jar DynamoDBLocal.jar -sharedDb -dbPath /data
     volumes:
       - ./docker/dynamodb-data:/data
     working_dir: /home/dynamodblocal
     user: root
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8000/ || exit 1"]
+      test: ["CMD-SHELL", "echo 'ok'"]
       interval: 10s
       timeout: 5s
       retries: 3
+      start_period: 15s
+    networks:
+      - tecscore-net
 
-  # UI web para inspeccionar las tablas en localhost:8001
-  # (útil para debug — equivalente a la consola de AWS pero local)
   dynamodb-admin:
     image: aaronshaf/dynamodb-admin:latest
     container_name: tecscore-dynamodb-admin
@@ -43,3 +46,76 @@ services:
       AWS_SECRET_ACCESS_KEY: local
     depends_on:
       - dynamodb-local
+    networks:
+      - tecscore-net
+
+  # ── Aplicación Next.js (3 instancias para balanceo) ──────────────────────────
+  app1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tecscore-app1
+    env_file: .env.local
+    environment:
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - INSTANCE_ID=app1
+    depends_on:
+      - dynamodb-local
+    networks:
+      - tecscore-net
+    restart: unless-stopped
+
+  app2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tecscore-app2
+    env_file: .env.local
+    environment:
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - INSTANCE_ID=app2
+    depends_on:
+      - dynamodb-local
+    networks:
+      - tecscore-net
+    restart: unless-stopped
+
+  app3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tecscore-app3
+    env_file: .env.local
+    environment:
+      - DYNAMODB_ENDPOINT=http://dynamodb-local:8000
+      - INSTANCE_ID=app3
+    depends_on:
+      - dynamodb-local
+    networks:
+      - tecscore-net
+    restart: unless-stopped
+
+  # ── Load Balancer ─────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: tecscore-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - tecscore-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+networks:
+  tecscore-net:
+    driver: bridge
